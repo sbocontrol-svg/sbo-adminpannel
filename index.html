@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador S.B.O. Control</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1b2a">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #0d1b2a; color: #333; padding: 16px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .modal-content { background: #f8f9fa; width: 100%; max-width: 400px; padding: 20px; border-radius: 16px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .modal-content h2 { font-size: 16px; color: #0d47a1; margin-bottom: 12px; text-align: center; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #333; margin-bottom: 4px; }
+        .input-con-icono { display: flex; gap: 6px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+        .btn-toggle { background: #e0f2f1; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; cursor: pointer; font-size: 18px; }
+        .btn-ingresar { background-color: #2e7d32; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+        .error-msg { color: #c62828; font-size: 11px; text-align: center; margin-top: 8px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="modal-content">
+        <h2>🔐 Acceso Restringido S.B.O.</h2>
+        <div class="form-group">
+            <label>Ingresá la Clave Maestra:</label>
+            <div class="input-con-icono">
+                <input type="password" id="txtClaveMaestra" class="form-control" placeholder="Clave exclusiva..." required>
+                <button type="button" id="btnToggle" class="btn-toggle" onclick="togglePassword()" title="Ver / Ocultar clave">🙈</button>
+            </div>
+        </div>
+        <button class="btn-ingresar" onclick="verificarClave()">🔓 Ingresar al Sistema</button>
+        <div id="errorMsg" class="error-msg">Clave incorrecta, mi amor. Probá de nuevo.</div>
+    </div>
+
+    <script>
+        const CLAVE_MAESTRA_SECRETA = "SBO-LVDPV";
+
+        function togglePassword() {
+            const input = document.getElementById('txtClaveMaestra');
+            const btn = document.getElementById('btnToggle');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerText = '👁️';
+            } else {
+                input.type = 'password';
+                btn.innerText = '🙈';
+            }
+        }
+
+        function verificarClave() {
+            const claveIngresada = document.getElementById('txtClaveMaestra').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (claveIngresada === CLAVE_MAESTRA_SECRETA) {
+                sessionStorage.setItem('sbo_auth', 'true');
+                window.location.href = 'menu.html';
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('txtClaveMaestra').value = '';
+            }
+        }
+
+        // Registro del Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log("Service Worker registrado con éxito"))
+                    .catch((err) => console.log("Fallo el registro", err));
+            });
+        }
+    </script>
+</body>
+</html>
