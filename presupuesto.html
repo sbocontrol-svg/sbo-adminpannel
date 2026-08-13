@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Presupuesto - S. B. O. Control</title>
+  <link rel="icon" type="image/jpeg" href="logosbo.jpg">
+  <link rel="apple-touch-icon" href="logosbo.jpg">
+  <meta name="theme-color" content="#00796b">
+  <style>
+    :root {
+      --primary-color: #00796b;
+      --primary-light: #e0f2f1;
+    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #0d1b2a; margin: 0; padding: 12px; color: #1f2937; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    
+    .container { width: 100%; max-width: 440px; }
+    .card { background: white; padding: 16px; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+    
+    .btn-volver { background: #546e7a; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; text-decoration: none; display: inline-block; }
+    
+    h1 { font-size: 1.15rem; color: var(--primary-color); margin: 0; }
+    h2 { font-size: 0.85rem; color: #374151; border-bottom: 2px solid var(--primary-color); padding-bottom: 3px; margin-top: 14px; }
+    
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: bold; color: #374151; margin-bottom: 3px; }
+    .form-control { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; }
+    
+    .btn-select { background: #475569; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.8rem; cursor: pointer; margin-top: 8px; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+    .item-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #e2e8f0; font-size: 0.78rem; }
+    
+    /* Estilo Tiquet */
+    .ticket-box { background: #fffbe6; border: 1px dashed #d4af37; padding: 12px; border-radius: 8px; margin-top: 12px; font-family: monospace; font-size: 0.75rem; color: #333; }
+    .ticket-header { text-align: center; font-weight: bold; margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 4px; color: #004d40; }
+    .ticket-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .ticket-total { border-top: 1px dashed #ccc; margin-top: 8px; padding-top: 6px; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.85rem; color: var(--primary-color); }
+    .ticket-footer { text-align: center; font-size: 0.65rem; color: #666; margin-top: 8px; }
+
+    .btn-print { background: var(--primary-color); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 10px; cursor: pointer; }
+    .btn-whatsapp { background: #0277bd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .container { max-width: 100%; }
+      .btn-print, .btn-whatsapp, .btn-volver, .btn-select, .form-group { display: none !important; }
+      .ticket-box { border: none; background: white; width: 100%; padding: 0; font-family: system-ui, sans-serif; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div>
+          <h1>S. B. O. Control</h1>
+          <span style="font-weight: bold; font-size: 0.72rem; color: #6b7280;">PRESUPUESTO / TIQUET</span>
+        </div>
+        <a href="menu.html" class="btn-volver">Volver</a>
+      </div>
+
+      <div class="form-group">
+        <label>Cliente:</label>
+        <input type="text" id="nombreCliente" class="form-control" placeholder="Ej. Juan Pérez" oninput="actualizarTicket()">
+      </div>
+      <div class="form-group">
+        <label>WhatsApp (Ej. 54911xxxxxxxx):</label>
+        <input type="text" id="telefonoWhatsApp" class="form-control" placeholder="Ej. 5491123456789">
+      </div>
+      <div class="form-group">
+        <label>Fecha:</label>
+        <input type="date" id="fechaPresupuesto" class="form-control" onchange="actualizarTicket()">
+      </div>
+
+      <button class="btn-select" onclick="abrirModal()">➕ Seleccionar Servicios</button>
+
+      <!-- Vista de Tiquet -->
+      <div class="ticket-box">
+        <div class="ticket-header">S. B. O. CONTROL - PRESUPUESTO</div>
+        <div id="ticketInfoCliente" style="margin-bottom: 6px; font-size: 0.7rem; color: #555;"></div>
+        <div id="ticketListaItems">
+          <div style="text-align: center; color: #888; font-style: italic;">Sin ítems seleccionados</div>
+        </div>
+        <div class="ticket-total">
+          <span>TOTAL:</span>
+          <span id="ticketTotal">$0</span>
+        </div>
+        <div class="ticket-footer">Validez del presupuesto: 10 días</div>
+      </div>
+
+      <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar Tiquet</button>
+      <button class="btn-whatsapp" onclick="enviarWhatsApp()">💬 Enviar por WhatsApp</button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalServicios" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin-top:0; font-size: 0.95rem;">Seleccionar Servicios</h3>
+      <div id="listaServicios"></div>
+      <button class="btn-select" style="background:#00796b;" onclick="cerrarModal()">Listo</button>
+    </div>
+  </div>
+
+  <script>
+    const preciosDefault = [
+      { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial", precio: "$10.000" },
+      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.000" },
+      { modalidad: "Llave en Mano (Pago Único)", detalle: "Contado efectivo", precio: "$45.000" },
+      { modalidad: "Llave en Mano (2 Cuotas)", detalle: "Financiado en dos partes", precio: "$50.000" },
+      { modalidad: "Llave en Mano (3 Cuotas)", detalle: "Financiado en tres partes", precio: "$60.000" },
+      { modalidad: "Membresía Mensual", detalle: "Abono mensual", precio: "$5.000 / mes" }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('fechaPresupuesto').valueAsDate = new Date();
+      cargarServicios();
+      actualizarTicket();
+    });
+
+    function abrirModal() { document.getElementById('modalServicios').style.display = 'flex'; }
+    function cerrarModal() { document.getElementById('modalServicios').style.display = 'none'; }
+
+    function cargarServicios() {
+      const guardados = JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
+      const contenedor = document.getElementById('listaServicios');
+      let html = '';
+
+      guardados.forEach((item, index) => {
+        let detalleFinal = item.detalle;
+        if (index === 0) detalleFinal += " + Curso Introductorio";
+        
+        const valor = parseInt(item.precio.replace(/[^0-9]/g, ''), 10) || 0;
+        
+        html += `
+          <div class="item-row">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" value="${valor}" data-nombre="${item.modalidad}" data-precio="${item.precio}" onchange="actualizarTicket()">
+              <span><strong>${item.modalidad}</strong><br><small>${detalleFinal}</small></span>
+            </label>
+            <span style="font-weight:bold;">${item.precio}</span>
+          </div>
+        `;
+      });
+      contenedor.innerHTML = html;
+    }
+
+    function actualizarTicket() {
+      const cliente = document.getElementById('nombreCliente').value.trim() || "Consumidor Final";
+      const fecha = document.getElementById('fechaPresupuesto').value || "-";
+      
+      document.getElementById('ticketInfoCliente').innerHTML = `Cliente: <strong>${cliente}</strong><br>Fecha: ${fecha}`;
+
+      const checkboxes = document.querySelectorAll('#listaServicios input:checked');
+      const contenedorItems = document.getElementById('ticketListaItems');
+      
+      if (checkboxes.length === 0) {
+        contenedorItems.innerHTML = `<div style="text-align: center; color: #888; font-style: italic;">Sin ítems seleccionados</div>`;
+        document.getElementById('ticketTotal').textContent = '$0';
+        return;
+      }
+
+      let htmlItems = '';
+      let total = 0;
+
+      checkboxes.forEach(chk => {
+        const nombre = chk.dataset.nombre;
+        const precioStr = chk.dataset.precio;
+        const valor = parseInt(chk.value, 10) || 0;
+        total += valor;
+
+        htmlItems += `
+          <div class="ticket-item">
+            <span>• ${nombre}</span>
+            <span>${precioStr}</span>
+          </div>
+        `;
+      });
+
+      contenedorItems.innerHTML = htmlItems;
+      document.getElementById('ticketTotal').textContent = '$' + total.toLocaleString('es-AR');
+    }
+
+    function enviarWhatsApp() {
+      const telefono = document.getElementById('telefonoWhatsApp').value.replace(/[^0-9]/g, '');
+      const cliente = document.getElementById('nombreCliente').value.trim() || "Cliente";
+      const fecha = document.getElementById('fechaPresupuesto').value || "-";
+      
+      const checkboxes = document.querySelectorAll('#listaServicios input:checked');
+      if (checkboxes.length === 0) {
+        alert("Selecciona al menos un servicio para enviar el presupuesto.");
+        return;
+      }
+
+      let detalleTexto = "";
+      let total = 0;
+
+      checkboxes.forEach(chk => {
+        detalleTexto += `- ${chk.dataset.nombre}: ${chk.dataset.precio}\n`;
+        total += parseInt(chk.value, 10) || 0;
+      });
+
+      const mensaje = `Hola ${cliente}! Acá te envío el detalle de tu presupuesto de S.B.O. Control:\n\nFecha: ${fecha}\n\n${detalleTexto}\nTOTAL: $${total.toLocaleString('es-AR')}\n\nValidez: 10 días.\n\nS.B.O. Control.`;
+      
+      const url = telefono ? `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}` : `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+      window.open(url, '_blank');
+    }
+  </script>
+</body>
+</html>

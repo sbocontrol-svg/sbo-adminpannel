@@ -32,6 +32,20 @@
     th, td { border: 1px solid #d1d5db; padding: 6px; text-align: left; }
     th { background: #f3f4f6; color: #1f2937; }
 
+    /* Estilos para el modal flotante */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .modal-header h3 { font-size: 0.9rem; color: #0f172a; margin: 0; }
+    .btn-cerrar-modal { background: none; border: none; font-size: 1rem; cursor: pointer; color: #64748b; font-weight: bold; }
+    
+    .form-group-precios { margin-bottom: 8px; }
+    .form-group-precios label { display: block; font-size: 0.7rem; font-weight: bold; color: #475569; margin-bottom: 2px; }
+    .form-control-sm { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.75rem; }
+    .btn-accion { background: #0277bd; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.75rem; margin-top: 8px; cursor: pointer; }
+    
+    .btn-toggle-edit { background: #475569; color: white; border: none; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
+
     .btn-print { background: var(--primary-color); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 14px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
     .btn-print:active { transform: scale(0.98); }
 
@@ -41,7 +55,7 @@
       body { background: white; padding: 0; align-items: flex-start; }
       .container { max-width: 100%; }
       .card { box-shadow: none; padding: 0; }
-      .btn-print, .btn-volver { display: none; }
+      .btn-print, .btn-volver, .btn-toggle-edit, .modal-overlay { display: none !important; }
     }
   </style>
 </head>
@@ -59,20 +73,22 @@
 
       <h2>Speech de Venta para Ferias</h2>
       <div class="speech-box">
-        "Hola, ¿cómo andás? Te hago una consulta rápida: ¿cómo venís manejando el stock, las ventas y la plata diaria de tu emprendimiento? ¿Anotás todo en un cuaderno o se te arman baches con los clientes? Mirá, te presento S.B.O. Control, una aplicación súper sencilla que armé específicamente para pequeños emprendedores como vos. No necesitás instalar nada raro ni renegar con PCs: la usás directo desde el celu en la feria, te lleva el control de stock, clientes, ventas y la caja chica al día, con respaldo en tu propio celu y bloqueo de seguridad por licencia. Te soluciona el negocio en dos segundos para que dejes de perder tiempo sumando a mano y te enfoques en vender.[span_0](start_span)"[span_0](end_span)
+        "Hola, ¿cómo andás? Te hago una consulta rápida: ¿cómo venís manejando el stock, las ventas y la plata diaria de tu emprendimiento? ¿Anotás todo en un cuaderno o se te arman baches con los clientes? Mirá, te presento S.B.O. Control, una aplicación súper sencilla que armé específicamente para pequeños emprendedores como vos. No necesitás instalar nada raro ni renegar con PCs: la usás directo desde el celu en la feria, te lleva el control de stock, clientes, ventas y la caja chica al día, con respaldo en tu propio celu y bloqueo de seguridad por licencia. Te soluciona el negocio en dos segundos para que dejes de perder tiempo sumando a mano y te enfoques en vender."
       </div>
 
       <h2>Beneficios Clave para Destacar</h2>
       <ul>
-        <li><strong>Control de Stock:</strong> Sabe exactamente qué tenés y qué te falta para no colgarte en medio de la feria[span_1](start_span)[span_1](end_span).</li>
-        <li><strong>Gestión de Clientes:</strong> Base de datos ordenada para fidelizar a tus compradores frecuentes[span_2](start_span)[span_2](end_span).</li>
-        <li><strong>Ventas y Caja Chica:</strong> Registrá cada movimiento al instante y tené claro cuánto ganaste en el día[span_3](start_span)[span_3](end_span).</li>
-        <li><strong>Libros Diario y Mensual:</strong> Resúmenes automáticos para ver la salud financiera de tu negocio sin dolores de cabeza[span_4](start_span)[span_4](end_span).</li>
-        <li><strong>Seguridad y Personalización:</strong> Poné tu propio logo, nombre de marca y manejá licencias por 30 días o vitalicias de forma súper profesional[span_5](start_span)[span_5](end_span).</li>
+        <li><strong>Control de Stock:</strong> Sabe exactamente qué tenés y qué te falta para no colgarte en medio de la feria.</li>
+        <li><strong>Gestión de Clientes:</strong> Base de datos ordenada para fidelizar a tus compradores frecuentes.</li>
+        <li><strong>Ventas y Caja Chica:</strong> Registrá cada movimiento al instante y tené claro cuánto ganaste en el día.</li>
+        <li><strong>Libros Diario y Mensual:</strong> Resúmenes automáticos para ver la salud financiera de tu negocio sin dolores de cabeza.</li>
+        <li><strong>Seguridad y Personalización:</strong> Poné tu propio logo, nombre de marca y manejá licencias por 30 días o vitalicias de forma súper profesional.</li>
       </ul>
 
       <h2>Esquema de Precios y Promoción</h2>
-      <p style="font-size: 0.75rem; margin-bottom: 4px;">*Todas las modalidades incluyen <strong>15 días de prueba sin cargo</strong>.</p>
+      <p style="font-size: 0.75rem; margin-bottom: 2px;">*Todas las modalidades incluyen <strong>15 días de prueba sin cargo, Soporte vía WhatsApp directo</strong>.</p>
+      <p style="font-size: 0.75rem; margin-bottom: 2px;">**Instalación, Curso Introductorio + Clave.</p>
+      <p style="font-size: 0.7rem; color: #555; margin-bottom: 6px;">*** La modalidad Llave en Mano es de carácter anual.</p>
       
       <table>
         <thead>
@@ -82,37 +98,132 @@
             <th>Precio</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td><strong>Llave en Mano (Pago Único)</strong></td>
-            <td>Contado efectivo[span_6](start_span)[span_6](end_span)</td>
-            <td><strong>$45.000</strong>[span_7](start_span)[span_7](end_span)</td>
-          </tr>
-          <tr>
-            <td><strong>Llave en Mano (2 Cuotas)</strong></td>
-            <td>Financiado en dos partes[span_8](start_span)[span_8](end_span)</td>
-            <td><strong>$50.000</strong>[span_9](start_span)[span_9](end_span)</td>
-          </tr>
-          <tr>
-            <td><strong>Llave en Mano (3 Cuotas)</strong></td>
-            <td>Financiado en tres partes[span_10](start_span)[span_10](end_span)</td>
-            <td><strong>$60.000</strong>[span_11](start_span)[span_11](end_span)</td>
-          </tr>
-          <tr>
-            <td><strong>Membresía Mensual</strong></td>
-            <td>Instalación y capacitación inicial ($10.000) + Costo de generación de clave ($2.000)</td>
-            <td><strong>$5.000 / mes</strong>[span_12](start_span)[span_12](end_span)</td>
-          </tr>
+        <tbody id="tablaPreciosCuerpo">
+          <!-- Se carga dinámicamente -->
         </tbody>
       </table>
+
+      <!-- Botón para abrir el modal flotante -->
+      <button class="btn-toggle-edit" onclick="abrirModal()">⚙️ Modificar Precios y Licencias</button>
 
       <button class="btn-print" onclick="window.print()">🖨️ Guardar como PDF / Imprimir</button>
 
       <div class="footer">
-        S.B.O. Control™ Small Business Owner | Soporte técnico por WhatsApp directo[span_13](start_span)[span_13](end_span)
+        S.B.O. Control™ Small Business Owner | Copyright ©2026
       </div>
     </div>
   </div>
 
+  <!-- Modal Flotante de Edición -->
+  <div id="modalEditor" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Actualizar Valores de la Tabla</h3>
+        <button class="btn-cerrar-modal" onclick="cerrarModal()">✕</button>
+      </div>
+      <form id="formPrecios" onsubmit="guardarPrecios(event)">
+        <div class="form-group-precios">
+          <label>Costo de Instalación ($):</label>
+          <input type="text" id="precioInstalacion" class="form-control-sm" required>
+        </div>
+        <div class="form-group-precios">
+          <label>Generación de Clave ($):</label>
+          <input type="text" id="precioClave" class="form-control-sm" required>
+        </div>
+        <div class="form-group-precios">
+          <label>Llave en Mano (Pago Único) ($):</label>
+          <input type="text" id="precioUnico" class="form-control-sm" required>
+        </div>
+        <div class="form-group-precios">
+          <label>Llave en Mano (2 Cuotas) ($):</label>
+          <input type="text" id="precio2Cuotas" class="form-control-sm" required>
+        </div>
+        <div class="form-group-precios">
+          <label>Llave en Mano (3 Cuotas) ($):</label>
+          <input type="text" id="precio3Cuotas" class="form-control-sm" required>
+        </div>
+        <div class="form-group-precios">
+          <label>Membresía Mensual ($):</label>
+          <input type="text" id="precioMensual" class="form-control-sm" required>
+        </div>
+        <button type="submit" class="btn-accion">💾 Guardar y Actualizar</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Valores por defecto actualizados
+    const preciosDefault = [
+      { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial", precio: "$10.000" },
+      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.000" },
+      { modalidad: "Llave en Mano (Pago Único)", detalle: "Contado efectivo", precio: "$45.000" },
+      { modalidad: "Llave en Mano (2 Cuotas)", detalle: "Financiado en dos partes", precio: "$50.000" },
+      { modalidad: "Llave en Mano (3 Cuotas)", detalle: "Financiado en tres partes", precio: "$60.000" },
+      { modalidad: "Membresía Mensual", detalle: "Abono mensual", precio: "$5.000 / mes" }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarTablaPrecios();
+    });
+
+    function abrirModal() {
+      cargarValoresEnInputs();
+      document.getElementById('modalEditor').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalEditor').style.display = 'none';
+    }
+
+    function cargarTablaPrecios() {
+      const guardados = JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
+      const tbody = document.getElementById('tablaPreciosCuerpo');
+      let html = '';
+      guardados.forEach(item => {
+        html += `
+          <tr>
+            <td><strong>${item.modalidad}</strong></td>
+            <td>${item.detalle}</td>
+            <td><strong>${item.precio}</strong></td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function cargarValoresEnInputs() {
+      const guardados = JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
+      document.getElementById('precioInstalacion').value = guardados[0].precio;
+      document.getElementById('precioClave').value = guardados[1].precio;
+      document.getElementById('precioUnico').value = guardados[2].precio;
+      document.getElementById('precio2Cuotas').value = guardados[3].precio;
+      document.getElementById('precio3Cuotas').value = guardados[4].precio;
+      document.getElementById('precioMensual').value = guardados[5].precio;
+    }
+
+    function guardarPrecios(e) {
+      e.preventDefault();
+      const pInst = document.getElementById('precioInstalacion').value.trim();
+      const pClave = document.getElementById('precioClave').value.trim();
+      const pUnico = document.getElementById('precioUnico').value.trim();
+      const p2C = document.getElementById('precio2Cuotas').value.trim();
+      const p3C = document.getElementById('precio3Cuotas').value.trim();
+      const pMensual = document.getElementById('precioMensual').value.trim();
+
+      const nuevosPrecios = [
+        { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial", precio: pInst },
+        { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: pClave },
+        { modalidad: "Llave en Mano (Pago Único)", detalle: "Contado efectivo", precio: pUnico },
+        { modalidad: "Llave en Mano (2 Cuotas)", detalle: "Financiado en dos partes", precio: p2C },
+        { modalidad: "Llave en Mano (3 Cuotas)", detalle: "Financiado en tres partes", precio: p3C },
+        { modalidad: "Membresía Mensual", detalle: "Abono mensual", precio: pMensual }
+      ];
+
+      localStorage.setItem('sbo_precios_guia', JSON.stringify(nuevosPrecios));
+      cargarTablaPrecios();
+      cerrarModal();
+      alert('¡Valores actualizados con éxito!');
+    }
+  </script>
 </body>
 </html>

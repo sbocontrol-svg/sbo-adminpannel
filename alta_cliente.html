@@ -14,6 +14,8 @@
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #333; margin-bottom: 4px; }
         .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: white; }
+        .form-row { display: flex; gap: 8px; }
+        .form-row .form-group { flex: 1; }
         .btn-primary { background-color: #2e7d32; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 4px; }
         .btn-primary:hover { background-color: #1b5e20; }
         .btn-pdf { background-color: #0277bd; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; }
@@ -62,6 +64,16 @@
                     <option value="">Cargando licencias...</option>
                 </select>
             </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>5. Desde la Fecha:</label>
+                    <input type="date" id="txtFechaInicio" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>6. Hasta la Fecha:</label>
+                    <input type="date" id="txtFechaFin" class="form-control" required>
+                </div>
+            </div>
             <button type="submit" class="btn-primary">💾 Registrar Cliente</button>
         </form>
 
@@ -76,6 +88,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Seteamos la fecha de inicio con el día de hoy por defecto
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('txtFechaInicio').value = hoy;
+            
             cargarSelectLicencias();
             cargarClientes();
         });
@@ -107,6 +123,8 @@
             const contacto = document.getElementById('txtContacto').value.trim();
             const domicilio = document.getElementById('txtDomicilio').value.trim();
             const licenciaSeleccionada = document.getElementById('selLicenciaAsignada').value;
+            const fechaInicio = document.getElementById('txtFechaInicio').value;
+            const fechaFin = document.getElementById('txtFechaFin').value;
 
             if (!licenciaSeleccionada) {
                 alert('Por favor elegí una licencia válida.');
@@ -121,12 +139,16 @@
                 contacto,
                 domicilio,
                 licencia: licenciaSeleccionada,
-                fecha: new Date().toLocaleDateString()
+                fechaInicio,
+                fechaFin,
+                fechaRegistro: new Date().toLocaleDateString()
             });
 
             localStorage.setItem('sbo_db_clientes', JSON.stringify(clientes));
             
             this.reset();
+            // Volver a poner la fecha de hoy por defecto después del reset
+            document.getElementById('txtFechaInicio').value = new Date().toISOString().split('T')[0];
             cargarSelectLicencias();
             cargarClientes();
             alert('¡Cliente registrado con éxito!');
@@ -149,6 +171,7 @@
                             <strong>${c.nombreCliente}</strong>
                             <p>Tel: ${c.contacto} | Dir: ${c.domicilio}</p>
                             <p>Lic: ${c.licencia}</p>
+                            <p>Vigencia: <strong>${c.fechaInicio || '-'}</strong> al <strong>${c.fechaFin || '-'}</strong></p>
                         </div>
                         <button class="btn-eliminar" onclick="eliminarCliente(${c.id})">✕</button>
                     </div>
