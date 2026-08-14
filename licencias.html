@@ -49,18 +49,14 @@
 
         <form id="formLicencia">
             <div class="form-group">
-                <label>1. Nombre y Apellido del Cliente:</label>
-                <input type="text" id="txtClienteLicencia" class="form-control" placeholder="Ej: Carlos Gómez" required>
-            </div>
-            <div class="form-group">
-                <label>2. Nombre de la Licencia:</label>
+                <label>1. Nombre de la Licencia:</label>
                 <input type="text" id="txtNombreLicencia" class="form-control" placeholder="Ej: Licencia Anual Ferias" required>
             </div>
             <div class="form-group">
-                <label>3. Duración:</label>
+                <label>2. Duración:</label>
                 <input type="text" id="txtDuracion" class="form-control" placeholder="Ej: 365 días / 1 año" required>
             </div>
-            <button type="submit" class="btn-primary" id="btnGuardar">💾 Generar y Guardar Licencia</button>
+            <button type="submit" class="btn-primary" id="btnGuardar">💾 Guardar Licencia</button>
         </form>
 
         <h3 style="font-size: 14px; color: #0d47a1; margin-top: 16px; margin-bottom: 8px;">Listado Registrado</h3>
@@ -77,32 +73,8 @@
 
         document.addEventListener('DOMContentLoaded', cargarLicencias);
 
-        function generarClaveParaCliente(nombreCliente, nombreLicencia) {
-            // Extraer iniciales del cliente (Ej: "Carlos Gómez" -> "CG")
-            const palabrasCliente = nombreCliente.trim().toUpperCase()
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .split(/\s+/);
-            const inicialesCliente = palabrasCliente.map(p => p[0]).join('');
-            const prefijo = `K${inicialesCliente}`;
-
-            // Extraer abreviatura de la licencia (Ej: "Licencia Anual Ferias" -> "LAF")
-            const palabrasLicencia = nombreLicencia.trim().toUpperCase()
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .split(/\s+/);
-            
-            const ignorar = ["DE", "LA", "EL", "LOS", "LAS", "Y", "A", "POR", "UN", "UNA"];
-            const acronimoLicencia = palabrasLicencia
-                .filter(p => !ignorar.includes(p))
-                .map(p => p[0])
-                .join('');
-            
-            const random = Math.floor(100 + Math.random() * 900);
-            return `${prefijo}-${acronimoLicencia}-${random}`;
-        }
-
         document.getElementById('formLicencia').addEventListener('submit', function(e) {
             e.preventDefault();
-            const clienteLicencia = document.getElementById('txtClienteLicencia').value.trim();
             const nombreLicencia = document.getElementById('txtNombreLicencia').value.trim();
             const duracion = document.getElementById('txtDuracion').value.trim();
 
@@ -111,27 +83,21 @@
             if (editandoId !== null) {
                 licencias = licencias.map(l => {
                     if (l.id === editandoId) {
-                        return { ...l, clienteLicencia, nombreLicencia, duracion };
+                        return { ...l, nombreLicencia, duracion };
                     }
                     return l;
                 });
                 editandoId = null;
-                document.getElementById('btnGuardar').innerText = '💾 Generar y Guardar Licencia';
+                document.getElementById('btnGuardar').innerText = '💾 Guardar Licencia';
                 document.getElementById('btnGuardar').style.backgroundColor = '#2e7d32';
                 alert('¡Licencia actualizada con éxito!');
             } else {
-                const clave = generarClaveParaCliente(clienteLicencia, nombreLicencia);
                 licencias.push({
                     id: Date.now(),
-                    clienteLicencia,
                     nombreLicencia,
-                    duracion,
-                    clave,
-                    activa: true,
-                    mostrar: true,
-                    seleccionable: true
+                    duracion
                 });
-                alert('¡Licencia generada con las iniciales del cliente y guardada!');
+                alert('¡Licencia guardada con éxito!');
             }
 
             localStorage.setItem('sbo_db_licencias_personalizadas', JSON.stringify(licencias));
@@ -154,8 +120,8 @@
                 html += `
                     <div class="licencia-item">
                         <div class="licencia-info">
-                            <strong>${l.nombreLicencia} (${l.clienteLicencia})</strong>
-                            <p>Duración: ${l.duracion} | Clave: <code>${l.clave}</code></p>
+                            <strong>${l.nombreLicencia}</strong>
+                            <p>Duración: ${l.duracion}</p>
                         </div>
                         <div class="acciones-item">
                             <button class="btn-editar" onclick="editarLicencia(${l.id})" title="Editar">✏️</button>
@@ -172,7 +138,6 @@
             let lic = licencias.find(l => l.id === id);
             if (!lic) return;
 
-            document.getElementById('txtClienteLicencia').value = lic.clienteLicencia || '';
             document.getElementById('txtNombreLicencia').value = lic.nombreLicencia;
             document.getElementById('txtDuracion').value = lic.duracion;
             
@@ -193,7 +158,7 @@
             if (editandoId === id) {
                 editandoId = null;
                 document.getElementById('formLicencia').reset();
-                document.getElementById('btnGuardar').innerText = '💾 Generar y Guardar Licencia';
+                document.getElementById('btnGuardar').innerText = '💾 Guardar Licencia';
                 document.getElementById('btnGuardar').style.backgroundColor = '#2e7d32';
             }
 
