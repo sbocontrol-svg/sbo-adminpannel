@@ -33,17 +33,28 @@
     th { background: #f3f4f6; color: #1f2937; }
 
     /* Estilos para el modal flotante */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
-    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 12px; }
+    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
     .modal-header h3 { font-size: 0.9rem; color: #0f172a; margin: 0; }
     .btn-cerrar-modal { background: none; border: none; font-size: 1rem; cursor: pointer; color: #64748b; font-weight: bold; }
     
-    .form-group-precios { margin-bottom: 8px; }
-    .form-group-precios label { display: block; font-size: 0.7rem; font-weight: bold; color: #475569; margin-bottom: 2px; }
+    .seccion-alta { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+    .seccion-titulo { font-size: 0.75rem; font-weight: bold; color: var(--primary-color); margin-bottom: 6px; }
+
+    .form-group-precios { margin-bottom: 6px; }
+    .form-group-precios label { display: block; font-size: 0.68rem; font-weight: bold; color: #475569; margin-bottom: 2px; }
     .form-control-sm { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.75rem; }
-    .btn-accion { background: #0277bd; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.75rem; margin-top: 8px; cursor: pointer; }
     
+    .btn-alta { background: #2e7d32; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.75rem; margin-top: 6px; cursor: pointer; }
+    .btn-alta:active { transform: scale(0.98); }
+
+    .btn-accion { background: #0277bd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.8rem; margin-top: 10px; cursor: pointer; }
+    .btn-accion:active { transform: scale(0.98); }
+
+    .item-edit-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-bottom: 8px; position: relative; }
+    .btn-eliminar-item { position: absolute; top: 6px; right: 6px; background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
+
     .btn-toggle-edit { background: #475569; color: white; border: none; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
 
     .btn-print { background: var(--primary-color); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 14px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
@@ -88,7 +99,7 @@
       <h2>Esquema de Precios y Promoción</h2>
       <p style="font-size: 0.75rem; margin-bottom: 2px;">*Todas las modalidades incluyen <strong>15 días de prueba sin cargo, Soporte vía WhatsApp directo</strong>.</p>
       <p style="font-size: 0.75rem; margin-bottom: 2px;">**Instalación, Curso Introductorio + Clave.</p>
-      <p style="font-size: 0.7rem; color: #555; margin-bottom: 6px;">*** La modalidad Llave en Mano es de carácter anual.</p>
+      <p style="font-size: 0.7rem; color: #555; margin-bottom: 6px;">*** La Licencia Vitalicia es de carácter anual.</p>
       
       <table>
         <thead>
@@ -99,12 +110,12 @@
           </tr>
         </thead>
         <tbody id="tablaPreciosCuerpo">
-          <!-- Se carga dinámicamente -->
+          <!-- Se carga dinámicamente con agrupación de filas -->
         </tbody>
       </table>
 
       <!-- Botón para abrir el modal flotante -->
-      <button class="btn-toggle-edit" onclick="abrirModal()">⚙️ Modificar Precios y Licencias</button>
+      <button class="btn-toggle-edit" onclick="abrirModal()">⚙️ Alta y Modificación de Licencias y Precios</button>
 
       <button class="btn-print" onclick="window.print()">🖨️ Guardar como PDF / Imprimir</button>
 
@@ -114,51 +125,53 @@
     </div>
   </div>
 
-  <!-- Modal Flotante de Edición -->
+  <!-- Modal Flotante de Alta y Edición -->
   <div id="modalEditor" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Actualizar Valores de la Tabla</h3>
+        <h3>Alta y Modificación de Licencias y Precios</h3>
         <button class="btn-cerrar-modal" onclick="cerrarModal()">✕</button>
       </div>
-      <form id="formPrecios" onsubmit="guardarPrecios(event)">
-        <div class="form-group-precios">
-          <label>Costo de Instalación ($):</label>
-          <input type="text" id="precioInstalacion" class="form-control-sm" required>
+
+      <!-- SECCIÓN 1: DAR DE ALTA UNA NUEVA MODALIDAD -->
+      <div class="seccion-alta">
+        <div class="seccion-titulo">➕ Dar de Alta Nueva Licencia / Opción</div>
+        <form id="formAltaPrecio" onsubmit="agregarNuevoPrecio(event)">
+          <div class="form-group-precios">
+            <label>Modalidad / Licencia:</label>
+            <input type="text" id="nuevoModalidad" class="form-control-sm" placeholder="Ej: Licencia Vitalicia Anual" required>
+          </div>
+          <div class="form-group-precios">
+            <label>Detalle / Forma de Pago:</label>
+            <input type="text" id="nuevoDetalle" class="form-control-sm" placeholder="Ej: Financiado en 6 cuotas" required>
+          </div>
+          <div class="form-group-precios">
+            <label>Precio / Valor ($):</label>
+            <input type="text" id="nuevoPrecio" class="form-control-sm" placeholder="Ej: $70.000" required>
+          </div>
+          <button type="submit" class="btn-alta">➕ Agregar al Esquema</button>
+        </form>
+      </div>
+
+      <!-- SECCIÓN 2: EDITAR O ELIMINAR EXISTENTES -->
+      <div class="seccion-titulo" style="margin-top: 10px;">✏️ Modificar o Eliminar Licencias Existentes</div>
+      <form id="formPrecios" onsubmit="guardarPreciosEditados(event)">
+        <div id="contenedorLicenciasEditables">
+          <!-- Se renderizan dinámicamente -->
         </div>
-        <div class="form-group-precios">
-          <label>Generación de Clave ($):</label>
-          <input type="text" id="precioClave" class="form-control-sm" required>
-        </div>
-        <div class="form-group-precios">
-          <label>Llave en Mano (Pago Único) ($):</label>
-          <input type="text" id="precioUnico" class="form-control-sm" required>
-        </div>
-        <div class="form-group-precios">
-          <label>Llave en Mano (2 Cuotas) ($):</label>
-          <input type="text" id="precio2Cuotas" class="form-control-sm" required>
-        </div>
-        <div class="form-group-precios">
-          <label>Llave en Mano (3 Cuotas) ($):</label>
-          <input type="text" id="precio3Cuotas" class="form-control-sm" required>
-        </div>
-        <div class="form-group-precios">
-          <label>Membresía Mensual ($):</label>
-          <input type="text" id="precioMensual" class="form-control-sm" required>
-        </div>
-        <button type="submit" class="btn-accion">💾 Guardar y Actualizar</button>
+        <button type="submit" class="btn-accion">💾 Guardar Todos los Cambios</button>
       </form>
     </div>
   </div>
 
   <script>
-    // Valores por defecto actualizados
+    // Valores por defecto reestructurados
     const preciosDefault = [
       { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial", precio: "$10.000" },
       { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.000" },
-      { modalidad: "Llave en Mano (Pago Único)", detalle: "Contado efectivo", precio: "$45.000" },
-      { modalidad: "Llave en Mano (2 Cuotas)", detalle: "Financiado en dos partes", precio: "$50.000" },
-      { modalidad: "Llave en Mano (3 Cuotas)", detalle: "Financiado en tres partes", precio: "$60.000" },
+      { modalidad: "Licencia Vitalicia Anual", detalle: "Pago Único (Contado)", precio: "$45.000" },
+      { modalidad: "Licencia Vitalicia Anual", detalle: "Financiado en 2 cuotas", precio: "$50.000" },
+      { modalidad: "Licencia Vitalicia Anual", detalle: "Financiado en 3 cuotas", precio: "$60.000" },
       { modalidad: "Membresía Mensual", detalle: "Abono mensual", precio: "$5.000 / mes" }
     ];
 
@@ -166,8 +179,58 @@
       cargarTablaPrecios();
     });
 
+    function obtenerPreciosActuales() {
+      return JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
+    }
+
+    // Carga la tabla combinando las celdas que comparten el mismo nombre de modalidad
+    function cargarTablaPrecios() {
+      const guardados = obtenerPreciosActuales();
+      const tbody = document.getElementById('tablaPreciosCuerpo');
+      let html = '';
+      
+      if (guardados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">No hay precios cargados.</td></tr>';
+        return;
+      }
+
+      let i = 0;
+      while (i < guardados.length) {
+        let currentModalidad = guardados[i].modalidad;
+        let count = 1;
+
+        // Contamos cuántas filas contiguas comparten la misma modalidad
+        while (i + count < guardados.length && guardados[i + count].modalidad === currentModalidad) {
+          count++;
+        }
+
+        // Fila principal con rowspan
+        html += `
+          <tr>
+            <td rowspan="${count}" style="vertical-align: middle;"><strong>${currentModalidad}</strong></td>
+            <td>${guardados[i].detalle}</td>
+            <td><strong>${guardados[i].precio}</strong></td>
+          </tr>
+        `;
+
+        // Filas secundarias para el grupo agrupado
+        for (let j = 1; j < count; j++) {
+          html += `
+            <tr>
+              <td>${guardados[i + j].detalle}</td>
+              <td><strong>${guardados[i + j].precio}</strong></td>
+            </tr>
+          `;
+        }
+
+        i += count;
+      }
+
+      tbody.innerHTML = html;
+    }
+
     function abrirModal() {
-      cargarValoresEnInputs();
+      renderizarFormularioEdicion();
       document.getElementById('modalEditor').style.display = 'flex';
     }
 
@@ -175,54 +238,85 @@
       document.getElementById('modalEditor').style.display = 'none';
     }
 
-    function cargarTablaPrecios() {
-      const guardados = JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
-      const tbody = document.getElementById('tablaPreciosCuerpo');
+    function renderizarFormularioEdicion() {
+      const guardados = obtenerPreciosActuales();
+      const contenedor = document.getElementById('contenedorLicenciasEditables');
       let html = '';
-      guardados.forEach(item => {
+
+      guardados.forEach((item, index) => {
         html += `
-          <tr>
-            <td><strong>${item.modalidad}</strong></td>
-            <td>${item.detalle}</td>
-            <td><strong>${item.precio}</strong></td>
-          </tr>
+          <div class="item-edit-card">
+            <button type="button" class="btn-eliminar-item" onclick="eliminarPrecio(${index})">🗑️ Eliminar</button>
+            <div class="form-group-precios" style="width: 80%;">
+              <label>Modalidad / Licencia:</label>
+              <input type="text" class="form-control-sm edit-modalidad" value="${item.modalidad}" required>
+            </div>
+            <div class="form-group-precios">
+              <label>Detalle / Forma de pago:</label>
+              <input type="text" class="form-control-sm edit-detalle" value="${item.detalle}" required>
+            </div>
+            <div class="form-group-precios">
+              <label>Precio:</label>
+              <input type="text" class="form-control-sm edit-precio" value="${item.precio}" required>
+            </div>
+          </div>
         `;
       });
-      tbody.innerHTML = html;
+
+      contenedor.innerHTML = html;
     }
 
-    function cargarValoresEnInputs() {
-      const guardados = JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
-      document.getElementById('precioInstalacion').value = guardados[0].precio;
-      document.getElementById('precioClave').value = guardados[1].precio;
-      document.getElementById('precioUnico').value = guardados[2].precio;
-      document.getElementById('precio2Cuotas').value = guardados[3].precio;
-      document.getElementById('precio3Cuotas').value = guardados[4].precio;
-      document.getElementById('precioMensual').value = guardados[5].precio;
-    }
-
-    function guardarPrecios(e) {
+    function agregarNuevoPrecio(e) {
       e.preventDefault();
-      const pInst = document.getElementById('precioInstalacion').value.trim();
-      const pClave = document.getElementById('precioClave').value.trim();
-      const pUnico = document.getElementById('precioUnico').value.trim();
-      const p2C = document.getElementById('precio2Cuotas').value.trim();
-      const p3C = document.getElementById('precio3Cuotas').value.trim();
-      const pMensual = document.getElementById('precioMensual').value.trim();
+      const mod = document.getElementById('nuevoModalidad').value.trim();
+      const det = document.getElementById('nuevoDetalle').value.trim();
+      const pre = document.getElementById('nuevoPrecio').value.trim();
 
-      const nuevosPrecios = [
-        { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial", precio: pInst },
-        { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: pClave },
-        { modalidad: "Llave en Mano (Pago Único)", detalle: "Contado efectivo", precio: pUnico },
-        { modalidad: "Llave en Mano (2 Cuotas)", detalle: "Financiado en dos partes", precio: p2C },
-        { modalidad: "Llave en Mano (3 Cuotas)", detalle: "Financiado en tres partes", precio: p3C },
-        { modalidad: "Membresía Mensual", detalle: "Abono mensual", precio: pMensual }
-      ];
+      if (!mod || !det || !pre) return;
 
-      localStorage.setItem('sbo_precios_guia', JSON.stringify(nuevosPrecios));
+      const guardados = obtenerPreciosActuales();
+      guardados.push({ modalidad: mod, detalle: det, precio: pre });
+
+      localStorage.setItem('sbo_precios_guia', JSON.stringify(guardados));
+      
+      document.getElementById('formAltaPrecio').reset();
+
+      cargarTablaPrecios();
+      renderizarFormularioEdicion();
+      alert('¡Nueva opción agregada con éxito!');
+    }
+
+    function guardarPreciosEditados(e) {
+      e.preventDefault();
+      
+      const tarjetas = document.querySelectorAll('.item-edit-card');
+      const listaActualizada = [];
+
+      tarjetas.forEach(card => {
+        const mod = card.querySelector('.edit-modalidad').value.trim();
+        const det = card.querySelector('.edit-detalle').value.trim();
+        const pre = card.querySelector('.edit-precio').value.trim();
+
+        if (mod && det && pre) {
+          listaActualizada.push({ modalidad: mod, detalle: det, precio: pre });
+        }
+      });
+
+      localStorage.setItem('sbo_precios_guia', JSON.stringify(listaActualizada));
       cargarTablaPrecios();
       cerrarModal();
-      alert('¡Valores actualizados con éxito!');
+      alert('¡Tabla de precios y licencias actualizada!');
+    }
+
+    function eliminarPrecio(index) {
+      if (confirm('¿Estás seguro de eliminar esta opción?')) {
+        const guardados = obtenerPreciosActuales();
+        guardados.splice(index, 1);
+        localStorage.setItem('sbo_precios_guia', JSON.stringify(guardados));
+        
+        cargarTablaPrecios();
+        renderizarFormularioEdicion();
+      }
     }
   </script>
 </body>
