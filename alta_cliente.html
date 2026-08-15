@@ -20,6 +20,8 @@
         
         .btn-primary { background-color: #2e7d32; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 4px; }
         .btn-primary:hover { background-color: #1b5e20; }
+        .btn-generar { background-color: #00796b; color: white; border: none; padding: 0 12px; border-radius: 8px; font-weight: bold; font-size: 12px; white-space: nowrap; cursor: pointer; }
+        .btn-generar:hover { background-color: #004d40; }
         .btn-historial { background-color: #374151; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; }
         .btn-historial:hover { background-color: #1f2937; }
         .btn-pdf { background-color: #0277bd; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; }
@@ -85,7 +87,10 @@
             </div>
             <div class="form-group">
                 <label>6. Clave de Licencia:</label>
-                <input type="text" id="txtClaveLicencia" class="form-control" placeholder="Ej: SBO-2026-XXXX" style="text-transform: uppercase;">
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="txtClaveLicencia" class="form-control" placeholder="Ej: LDPV-538-CG" style="text-transform: uppercase;">
+                    <button type="button" class="btn-generar" onclick="generarClaveAlta()">⚙️ Generar</button>
+                </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -127,11 +132,12 @@
             cargarSelectLicencias();
             cargarClientes();
 
-            // Cargar automáticamente la clave asociada al seleccionar una licencia
             document.getElementById('selLicenciaAsignada').addEventListener('change', function() {
                 const opt = this.options[this.selectedIndex];
                 const clave = opt ? opt.getAttribute('data-clave') : '';
-                document.getElementById('txtClaveLicencia').value = clave || '';
+                if(clave) {
+                    document.getElementById('txtClaveLicencia').value = clave;
+                }
             });
         });
 
@@ -164,6 +170,48 @@
             select.innerHTML = html;
         }
 
+        function obtenerAcronimo(texto, valorDefecto = 'CLI') {
+            if (!texto || !texto.trim()) return valorDefecto;
+            
+            const palabras = texto.trim().toUpperCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .split(/\s+/);
+                
+            const ignorar = ["DE", "DEL", "LA", "EL", "LOS", "LAS", "Y", "A", "POR", "UN", "UNA"];
+            const filtradas = palabras.filter(p => !ignorar.includes(p) && p.length > 0);
+            
+            if (filtradas.length === 0) return valorDefecto;
+            return filtradas.map(p => p[0]).join('');
+        }
+
+        function generarClaveAlta() {
+            const selectLicencia = document.getElementById('selLicenciaAsignada');
+            const nombreLicencia = selectLicencia.value;
+            const nombreCliente = document.getElementById('txtNombreCliente').value.trim();
+
+            if (!nombreLicencia) {
+                alert('¡Che, elegí una licencia del desplegable primero!');
+                return;
+            }
+
+            const acronimoLicencia = obtenerAcronimo(nombreLicencia, 'LIC');
+            const random = Math.floor(100 + Math.random() * 900);
+            const acronimoCliente = obtenerAcronimo(nombreCliente, 'CLI');
+
+            const claveGenerada = `${acronimoLicencia}-${random}-${acronimoCliente}`;
+            document.getElementById('txtClaveLicencia').value = claveGenerada;
+        }
+
+        // Convierte AAAA-MM-DD a DD/MM/AAAA para mostrarlo en formato argentino
+        function formatearFechaAR(fechaStr) {
+            if (!fechaStr) return '-';
+            const partes = fechaStr.split('-');
+            if (partes.length === 3) {
+                return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+            return fechaStr;
+        }
+
         document.getElementById('formCliente').addEventListener('submit', function(e) {
             e.preventDefault();
             const nombreCliente = document.getElementById('txtNombreCliente').value.trim();
@@ -182,7 +230,7 @@
 
             let clientes = JSON.parse(localStorage.getItem('sbo_db_clientes')) || [];
             
-            clientes.push({
+            const nuevoRegistro = {
                 id: Date.now(),
                 nombreCliente,
                 contacto,
@@ -192,17 +240,27 @@
                 clave: claveLicencia || 'SIN-CLAVE',
                 fechaInicio,
                 fechaFin,
-                fechaRegistro: new Date().toLocaleDateString()
-            });
+                fechaRegistro: new Date().toLocaleDateString('es-AR')
+            };
 
+            clientes.push(nuevoRegistro);
             localStorage.setItem('sbo_db_clientes', JSON.stringify(clientes));
+
+            let clavesCreadas = JSON.parse(localStorage.getItem('sbo_db_claves_creadas')) || [];
+            clavesCreadas.unshift({
+                id: nuevoRegistro.id,
+                cliente: nombreCliente,
+                licencia: licenciaSeleccionada,
+                clave: claveLicencia || 'SIN-CLAVE'
+            });
+            localStorage.setItem('sbo_db_claves_creadas', JSON.stringify(clavesCreadas));
             
             this.reset();
             document.getElementById('txtFechaInicio').value = new Date().toISOString().split('T')[0];
             cargarSelectLicencias();
             
             alert('¡Cliente registrado con éxito!');
-            abrirModalClientes(); // Abre el modal para ver la lista actualizada inmediatamente
+            abrirModalClientes();
         });
 
         function cargarClientes() {
@@ -223,7 +281,7 @@
                             <p>📞 Tel: ${c.contacto} | ✉️ ${c.email || 'Sin Email'}</p>
                             <p>📍 Dir: ${c.domicilio}</p>
                             <p>🔑 Lic: <strong>${c.licencia}</strong> (${c.clave || 'Sin Clave'})</p>
-                            <p>📅 Vigencia: <strong>${c.fechaInicio || '-'}</strong> al <strong>${c.fechaFin || '-'}</strong></p>
+                            <p>📅 Vigencia: <strong>${formatearFechaAR(c.fechaInicio)}</strong> al <strong>${formatearFechaAR(c.fechaFin)}</strong></p>
                         </div>
                         <button class="btn-eliminar" onclick="eliminarCliente(${c.id})">🗑️</button>
                     </div>
@@ -237,6 +295,11 @@
             let clientes = JSON.parse(localStorage.getItem('sbo_db_clientes')) || [];
             clientes = clientes.filter(c => c.id !== id);
             localStorage.setItem('sbo_db_clientes', JSON.stringify(clientes));
+
+            let claves = JSON.parse(localStorage.getItem('sbo_db_claves_creadas')) || [];
+            claves = claves.filter(c => c.id !== id);
+            localStorage.setItem('sbo_db_claves_creadas', JSON.stringify(claves));
+
             cargarClientes();
         };
     </script>
