@@ -7,32 +7,66 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: #0d1b2a; color: #333; padding: 12px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background-color: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; }
-        .brand h1 { font-size: 20px; color: #00796b; font-weight: 700; margin-bottom: 4px; }
-        .brand p { font-size: 12px; color: #666; margin-bottom: 20px; }
-        .menu-btn { background-color: #0277bd; color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none; display: block; margin-bottom: 12px; transition: background 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .menu-btn:active { transform: scale(0.98); }
-        .menu-btn.alta { background-color: #2e7d32; }
-        .menu-btn.clave { background-color: #e65100; }
-        .menu-btn.speech { background-color: #00796b; }
-        .menu-btn.presupuesto { background-color: #5c6b73; }
+        .container { background-color: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 20px 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .brand h1 { font-size: 17px; color: #00796b; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .brand h1 .ruedita-chica { font-size: 13px; opacity: 0.8; }
+        .brand p { font-size: 11px; color: #666; margin-top: 2px; }
+        .logo-sbo { height: 38px; width: auto; object-fit: contain; }
+        
+        .menu-list { display: flex; flex-direction: column; gap: 10px; }
+        
+        .menu-btn { color: white; border: none; width: 100%; padding: 14px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: space-between; transition: transform 0.1s ease, background 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .menu-btn:active { transform: scale(0.98); opacity: 0.9; }
+        .menu-btn span.arrow { font-size: 12px; opacity: 0.8; }
+
+        .btn-alta { background-color: #2e7d32; }
+        .btn-licencias { background-color: #0277bd; }
+        .btn-clave { background-color: #e65100; }
+        .btn-presupuesto { background-color: #5c6b73; }
+        .btn-speech { background-color: #00796b; }
+        .btn-bloquear { background-color: #c62828; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="brand">
-            <h1>S. B. O. Control</h1>
-            <p>Menú de Administración Principal</p>
+        <div class="header">
+            <div class="brand">
+                <h1><span class="ruedita-chica">⚙️</span> S. B. O. Control</h1>
+                <p>Menú de Administración Principal</p>
+            </div>
+            <img src="sbologo.png" alt="SBO Logo" class="logo-sbo">
         </div>
 
-        <a href="alta_cliente.html" class="menu-btn alta">👤 Alta Cliente</a>
-        <a href="licencias.html" class="menu-btn">🔑 Licencias</a>
-        <a href="gestor_clave.html" class="menu-btn clave">🗝️ Generador de Claves</a>
-        <a href="presupuesto.html" class="menu-btn presupuesto">📊 Presupuesto</a>
-        <a href="guia.html" class="menu-btn speech">💬 Speech y Guía Comercial</a>
-        
-        <a href="index.html" class="menu-btn" style="background-color: #c62828; margin-top: 20px; text-decoration: none;">🔒 Bloquear Sistema</a>
+        <div class="menu-list">
+            <a href="alta_cliente.html" class="menu-btn btn-alta">
+                <span>👤 Alta Cliente</span>
+                <span class="arrow">➔</span>
+            </a>
+            <a href="licencias.html" class="menu-btn btn-licencias">
+                <span>🔑 Licencias</span>
+                <span class="arrow">➔</span>
+            </a>
+            <a href="gestor_clave.html" class="menu-btn btn-clave">
+                <span>🗝️ Generador de Claves</span>
+                <span class="arrow">➔</span>
+            </a>
+            <a href="presupuesto.html" class="menu-btn btn-presupuesto">
+                <span>📊 Presupuesto</span>
+                <span class="arrow">➔</span>
+            </a>
+            <a href="guia.html" class="menu-btn btn-speech">
+                <span>💬 Speech y Guía Comercial</span>
+                <span class="arrow">➔</span>
+            </a>
+            
+            <a href="index.html" class="menu-btn btn-bloquear">
+                <span>🔒 Bloquear Sistema</span>
+                <span class="arrow">✖</span>
+            </a>
+        </div>
     </div>
 
 </body>

@@ -6,34 +6,49 @@
     <title>S.B.O. Control - Gestión de Licencias</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #0d1b2a; color: #333; padding: 12px; display: flex; justify-content: center; }
+        body { background-color: #0d1b2a; color: #333; padding: 12px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .container { background-color: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .brand h1 { font-size: 17px; color: #00796b; font-weight: 700; }
         .brand p { font-size: 11px; color: #666; }
+        
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #333; margin-bottom: 4px; }
         .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: white; }
-        .btn-primary { background-color: #2e7d32; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: background 0.2s; }
+        
+        .btn-primary { background-color: #2e7d32; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: background 0.2s; }
         .btn-primary:hover { background-color: #1b5e20; }
-        .btn-pdf { background-color: #0277bd; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; }
+        .btn-historial { background-color: #374151; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .btn-historial:hover { background-color: #1f2937; }
+        .btn-pdf { background-color: #0277bd; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; }
         .btn-pdf:hover { background-color: #01579b; }
-        .btn-volver { background-color: #546e7a; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: block; text-align: center; margin-top: 10px; }
-        .lista-licencias { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
-        .licencia-item { background: white; border: 1px solid #eee; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+        .btn-volver { background-color: #546e7a; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: block; text-align: center; margin-top: 8px; }
+
+        /* Estilos del Modal Flotante */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+        .modal-content { background: white; padding: 16px; border-radius: 14px; width: 100%; max-width: 440px; max-height: 82vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00796b; padding-bottom: 8px; margin-bottom: 12px; }
+        .modal-header h3 { font-size: 15px; color: #00796b; margin: 0; font-weight: 700; }
+        .btn-cerrar-x { background: none; border: none; font-size: 18px; font-weight: bold; color: #666; cursor: pointer; padding: 0 4px; }
+
+        .lista-licencias { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 4px; max-height: 55vh; }
+        .licencia-item { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .licencia-info strong { color: #00796b; display: block; font-size: 13px; }
         .licencia-info p { color: #666; font-size: 11px; margin-top: 2px; }
         
         .acciones-item { display: flex; gap: 4px; align-items: center; }
         .btn-editar { background: #e0f2f1; color: #00796b; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
         .btn-editar:hover { background: #b2dfdb; }
-        .btn-eliminar { background: #ffebee; color: #c62828; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-eliminar:hover { background: #ffcdd2; }
+        .btn-eliminar { background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-eliminar:hover { background: #fca5a5; }
 
         @media print {
             body { background: white !important; padding: 0 !important; }
             .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; }
-            #formLicencia, .btn-volver, .acciones-item, .btn-pdf { display: none !important; }
+            #formLicencia, .btn-volver, .acciones-item, .btn-pdf, .btn-historial { display: none !important; }
+            .modal-overlay { position: static !important; background: none !important; display: block !important; padding: 0 !important; }
+            .modal-content { max-height: none !important; box-shadow: none !important; border: none !important; padding: 0 !important; }
+            .btn-cerrar-x, .modal-header h3 { display: none !important; }
         }
     </style>
 </head>
@@ -59,19 +74,38 @@
             <button type="submit" class="btn-primary" id="btnGuardar">💾 Guardar Licencia</button>
         </form>
 
-        <h3 style="font-size: 14px; color: #0d47a1; margin-top: 16px; margin-bottom: 8px;">Listado Registrado</h3>
-        <div class="lista-licencias" id="contenedorLicencias">
-            <!-- Se carga dinámicamente -->
-        </div>
-
-        <button class="btn-pdf" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+        <button type="button" class="btn-historial" onclick="abrirModalLicencias()">🔑 Ver Licencias Registradas</button>
+        <button type="button" class="btn-pdf" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
         <a href="menu.html" class="btn-volver">⬅️ Volver al Menú</a>
+    </div>
+
+    <!-- Modal Flotante de Licencias Registradas -->
+    <div id="modalLicencias" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔑 Licencias Registradas</h3>
+                <button type="button" class="btn-cerrar-x" onclick="cerrarModalLicencias()">✕</button>
+            </div>
+            <div class="lista-licencias" id="contenedorLicencias">
+                <!-- Se carga dinámicamente -->
+            </div>
+            <button type="button" class="btn-historial" style="margin-top: 12px; background:#00796b;" onclick="cerrarModalLicencias()">Cerrar</button>
+        </div>
     </div>
 
     <script>
         let editandoId = null;
 
         document.addEventListener('DOMContentLoaded', cargarLicencias);
+
+        function abrirModalLicencias() {
+            cargarLicencias();
+            document.getElementById('modalLicencias').style.display = 'flex';
+        }
+
+        function cerrarModalLicencias() {
+            document.getElementById('modalLicencias').style.display = 'none';
+        }
 
         document.getElementById('formLicencia').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -104,6 +138,7 @@
             
             this.reset();
             cargarLicencias();
+            abrirModalLicencias(); // Abre el modal para ver el resultado
         });
 
         function cargarLicencias() {
@@ -111,7 +146,7 @@
             const licencias = JSON.parse(localStorage.getItem('sbo_db_licencias_personalizadas')) || [];
 
             if (licencias.length === 0) {
-                contenedor.innerHTML = '<div style="text-align:center; color:#666; font-size:12px; padding:10px;">No hay licencias cargadas todavía.</div>';
+                contenedor.innerHTML = '<div style="text-align:center; color:#666; font-size:12px; padding:20px 0;">No hay licencias cargadas todavía.</div>';
                 return;
             }
 
@@ -146,6 +181,7 @@
             btn.innerText = '✏️ Actualizar Licencia';
             btn.style.backgroundColor = '#0277bd';
 
+            cerrarModalLicencias(); // Cierra el modal para permitir la edición en el formulario
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 

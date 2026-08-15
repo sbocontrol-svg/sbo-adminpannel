@@ -6,23 +6,49 @@
     <title>S.B.O. Control - Gestor de Claves</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #0d1b2a; color: #333; padding: 12px; display: flex; justify-content: center; }
+        body { background-color: #0d1b2a; color: #333; padding: 12px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .container { background-color: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .brand h1 { font-size: 17px; color: #00796b; font-weight: 700; }
         .brand p { font-size: 11px; color: #666; }
+        
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #333; margin-bottom: 4px; }
         .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: white; }
-        .btn-select { background: #00796b; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: 4px; }
-        .btn-select:hover { background: #004d40; }
-        .btn-volver { background-color: #546e7a; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: block; text-align: center; margin-top: 10px; }
-        .lista-claves { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
-        .clave-item { background: white; border: 1px solid #eee; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+        
+        .btn-select { background: #2e7d32; color: white; border: none; padding: 11px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: 4px; transition: background 0.2s; }
+        .btn-select:hover { background: #1b5e20; }
+        .btn-historial { background-color: #374151; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .btn-historial:hover { background-color: #1f2937; }
+        .btn-volver { background-color: #546e7a; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: block; text-align: center; margin-top: 8px; }
+
+        /* Estilos del Modal Flotante */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+        .modal-content { background: white; padding: 16px; border-radius: 14px; width: 100%; max-width: 440px; max-height: 82vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00796b; padding-bottom: 8px; margin-bottom: 12px; }
+        .modal-header h3 { font-size: 15px; color: #00796b; margin: 0; font-weight: 700; }
+        .btn-cerrar-x { background: none; border: none; font-size: 18px; font-weight: bold; color: #666; cursor: pointer; padding: 0 4px; }
+
+        .lista-claves { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 4px; max-height: 55vh; }
+        .clave-item { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .clave-info strong { color: #00796b; display: block; font-size: 13px; }
-        .clave-info p { color: #666; font-size: 11px; margin-top: 2px; }
-        .btn-eliminar { background: #ffebee; color: #c62828; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-eliminar:hover { background: #ffcdd2; }
+        .clave-info p { color: #4b5563; font-size: 11px; margin-top: 2px; }
+        .clave-info code { background: #e0f2f1; color: #004d40; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; font-size: 12px; }
+
+        .acciones-item { display: flex; gap: 4px; align-items: center; }
+        .btn-copiar { background: #e0f2f1; color: #00796b; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-copiar:hover { background: #b2dfdb; }
+        .btn-eliminar { background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-eliminar:hover { background: #fca5a5; }
+
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; }
+            .btn-select, .btn-volver, .acciones-item, .btn-historial { display: none !important; }
+            .modal-overlay { position: static !important; background: none !important; display: block !important; padding: 0 !important; }
+            .modal-content { max-height: none !important; box-shadow: none !important; border: none !important; padding: 0 !important; }
+            .btn-cerrar-x, .modal-header h3 { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -36,25 +62,34 @@
         </div>
 
         <div class="form-group">
-            <label>Nombre y Apellido del Cliente (Opcional):</label>
-            <input type="text" id="nombreCliente" class="form-control" placeholder="Ej: Juan Manuel Benitez">
+            <label>1. Nombre y Apellido del Cliente (Opcional):</label>
+            <input type="text" id="nombreCliente" class="form-control" placeholder="Ej: Juan Manuel Benítez">
         </div>
 
         <div class="form-group">
-            <label>Tipo de Licencia:</label>
+            <label>2. Tipo de Licencia:</label>
             <select id="selLicencia" class="form-control">
                 <option value="">Cargando licencias...</option>
             </select>
         </div>
 
-        <button class="btn-select" onclick="crearClave()">💾 Crear Clave</button>
-
-        <h3 style="font-size: 14px; color: #0d47a1; margin-top: 16px; margin-bottom: 8px;">Claves Creadas</h3>
-        <div class="lista-claves" id="contenedorClaves">
-            <!-- Se carga dinámicamente -->
-        </div>
-
+        <button type="button" class="btn-select" onclick="crearClave()">💾 Crear Clave</button>
+        <button type="button" class="btn-historial" onclick="abrirModalClaves()">🔑 Ver Claves Creadas</button>
         <a href="menu.html" class="btn-volver">⬅️ Volver al Menú</a>
+    </div>
+
+    <!-- Modal Flotante de Claves Creadas -->
+    <div id="modalClaves" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔑 Claves Creadas</h3>
+                <button type="button" class="btn-cerrar-x" onclick="cerrarModalClaves()">✕</button>
+            </div>
+            <div class="lista-claves" id="contenedorClaves">
+                <!-- Se carga dinámicamente -->
+            </div>
+            <button type="button" class="btn-historial" style="margin-top: 12px; background:#00796b;" onclick="cerrarModalClaves()">Cerrar</button>
+        </div>
     </div>
 
     <script>
@@ -62,6 +97,15 @@
             cargarSelectLicencias();
             cargarClavesCreadas();
         });
+
+        function abrirModalClaves() {
+            cargarClavesCreadas();
+            document.getElementById('modalClaves').style.display = 'flex';
+        }
+
+        function cerrarModalClaves() {
+            document.getElementById('modalClaves').style.display = 'none';
+        }
 
         function cargarSelectLicencias() {
             const select = document.getElementById('selLicencia');
@@ -79,6 +123,21 @@
             select.innerHTML = html;
         }
 
+        // Función auxiliar para extraer el acrónimo/iniciales de un texto
+        function obtenerAcronimo(texto, valorDefecto = 'CLI') {
+            if (!texto || !texto.trim()) return valorDefecto;
+            
+            const palabras = texto.trim().toUpperCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remueve tildes
+                .split(/\s+/);
+                
+            const ignorar = ["DE", "DEL", "LA", "EL", "LOS", "LAS", "Y", "A", "POR", "UN", "UNA"];
+            const filtradas = palabras.filter(p => !ignorar.includes(p) && p.length > 0);
+            
+            if (filtradas.length === 0) return valorDefecto;
+            return filtradas.map(p => p[0]).join('');
+        }
+
         function crearClave() {
             const select = document.getElementById('selLicencia');
             const nombreLicencia = select.value;
@@ -89,13 +148,17 @@
                 return;
             }
 
-            const palabras = nombreLicencia.trim().toUpperCase()
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .split(/\s+/);
-            const ignorar = ["DE", "LA", "EL", "LOS", "LAS", "Y", "A", "POR", "UN", "UNA"];
-            const acronimo = palabras.filter(p => !ignorar.includes(p)).map(p => p[0]).join('');
+            // 1. Acrónimo de la Licencia (ej: Licencia De Punto Venta -> LDPV)
+            const acronimoLicencia = obtenerAcronimo(nombreLicencia, 'LIC');
+
+            // 2. Número Aleatorio de 3 dígitos (ej: 538)
             const random = Math.floor(100 + Math.random() * 900);
-            const clave = `K-${acronimo}-${random}`;
+
+            // 3. Iniciales del Cliente (ej: Juan Manuel Benítez -> JMB)
+            const acronimoCliente = clienteInput ? obtenerAcronimo(clienteInput, 'CLI') : 'CLI';
+
+            // Formato final: LDPV-538-JMB
+            const clave = `${acronimoLicencia}-${random}-${acronimoCliente}`;
 
             const clienteFinal = clienteInput || "Sin nombre";
 
@@ -111,8 +174,9 @@
 
             document.getElementById('nombreCliente').value = '';
             select.value = '';
-            cargarClavesCreadas();
-            alert("¡Clave creada y guardada en el listado con éxito!");
+            
+            alert(`¡Clave ${clave} creada con éxito!`);
+            abrirModalClaves(); // Abre el modal inmediatamente
         }
 
         function cargarClavesCreadas() {
@@ -120,7 +184,7 @@
             const claves = JSON.parse(localStorage.getItem('sbo_db_claves_creadas')) || [];
 
             if (claves.length === 0) {
-                contenedor.innerHTML = '<div style="text-align:center; color:#666; font-size:12px; padding:10px;">No hay claves creadas todavía.</div>';
+                contenedor.innerHTML = '<div style="text-align:center; color:#666; font-size:12px; padding:20px 0;">No hay claves creadas todavía.</div>';
                 return;
             }
 
@@ -129,15 +193,33 @@
                 html += `
                     <div class="clave-item">
                         <div class="clave-info">
-                            <strong>${c.cliente} (${c.licencia})</strong>
-                            <p>Clave: <code>${c.clave}</code></p>
+                            <strong>${c.cliente}</strong>
+                            <p>Lic: ${c.licencia}</p>
+                            <p style="margin-top:4px;">Clave: <code>${c.clave}</code></p>
                         </div>
-                        <button class="btn-eliminar" onclick="eliminarClave(${c.id})" title="Eliminar">✕</button>
+                        <div class="acciones-item">
+                            <button class="btn-copiar" onclick="copiarTexto('${c.clave}')" title="Copiar Clave">📋 Copiar</button>
+                            <button class="btn-eliminar" onclick="eliminarClave(${c.id})" title="Eliminar">✕</button>
+                        </div>
                     </div>
                 `;
             });
             contenedor.innerHTML = html;
         }
+
+        window.copiarTexto = function(texto) {
+            navigator.clipboard.writeText(texto).then(() => {
+                alert(`¡Clave "${texto}" copiada al portapapeles!`);
+            }).catch(() => {
+                const temp = document.createElement('textarea');
+                temp.value = texto;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+                alert(`¡Clave "${texto}" copiada al portapapeles!`);
+            });
+        };
 
         window.eliminarClave = function(id) {
             if(!confirm('¿Estás seguro de eliminar esta clave de la lista?')) return;

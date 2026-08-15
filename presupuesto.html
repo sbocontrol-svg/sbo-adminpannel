@@ -23,15 +23,15 @@
     h1 { font-size: 1.15rem; color: var(--primary-color); margin: 0; }
     h2 { font-size: 0.85rem; color: #374151; border-bottom: 2px solid var(--primary-color); padding-bottom: 3px; margin-top: 14px; }
     
-    .form-group { margin-bottom: 10px; }
-    .form-group label { display: block; font-size: 0.75rem; font-weight: bold; color: #374151; margin-bottom: 3px; }
+    .form-group { margin-bottom: 8px; }
+    .form-group label { display: block; font-size: 0.72rem; font-weight: bold; color: #374151; margin-bottom: 2px; }
     .form-control { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; }
     
     .btn-select { background: #475569; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.8rem; cursor: pointer; margin-top: 8px; }
 
-    /* Modal */
+    /* Modales */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
-    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; }
     .item-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #e2e8f0; font-size: 0.78rem; }
     
     /* Estilo Tiquet */
@@ -39,15 +39,17 @@
     .ticket-header { text-align: center; font-weight: bold; margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 4px; color: #004d40; }
     .ticket-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
     .ticket-total { border-top: 1px dashed #ccc; margin-top: 8px; padding-top: 6px; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.85rem; color: var(--primary-color); }
-    .ticket-footer { text-align: center; font-size: 0.65rem; color: #666; margin-top: 8px; }
+    .ticket-footer { text-align: center; font-size: 0.65rem; color: #666; margin-top: 8px; line-height: 1.3; }
 
     .btn-print { background: var(--primary-color); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 10px; cursor: pointer; }
     .btn-whatsapp { background: #0277bd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; }
+    .btn-save { background: #2e7d32; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; }
+    .btn-historial { background: #374151; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; }
 
     @media print {
       body { background: white; padding: 0; }
       .container { max-width: 100%; }
-      .btn-print, .btn-whatsapp, .btn-volver, .btn-select, .form-group { display: none !important; }
+      .btn-print, .btn-whatsapp, .btn-save, .btn-historial, .btn-volver, .btn-select, .form-group, .seccion-descuento-inputs { display: none !important; }
       .ticket-box { border: none; background: white; width: 100%; padding: 0; font-family: system-ui, sans-serif; }
     }
   </style>
@@ -69,8 +71,8 @@
         <input type="text" id="nombreCliente" class="form-control" placeholder="Ej. Juan Pérez" oninput="actualizarTicket()">
       </div>
       <div class="form-group">
-        <label>WhatsApp (Ej. 54911xxxxxxxx):</label>
-        <input type="text" id="telefonoWhatsApp" class="form-control" placeholder="Ej. 5491123456789">
+        <label>WhatsApp (Ej. 1123456789 o 5491123456789):</label>
+        <input type="text" id="telefonoWhatsApp" class="form-control" placeholder="Ej. 1123456789">
       </div>
       <div class="form-group">
         <label>Fecha:</label>
@@ -79,6 +81,27 @@
 
       <button class="btn-select" onclick="abrirModal()">➕ Seleccionar Servicios</button>
 
+      <!-- SECCIÓN DESCUENTO MANUAL -->
+      <div class="seccion-descuento-inputs" style="border-top: 1px dashed #cbd5e1; margin-top: 10px; padding-top: 8px;">
+        <div class="form-group">
+          <label>Motivo / Nombre del Descuento (Opcional):</label>
+          <input type="text" id="motivoDescuento" class="form-control" placeholder="Ej. Descuento Lanzamiento / Contado" oninput="actualizarTicket()">
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <div class="form-group" style="flex: 2;">
+            <label>Monto / Porcentaje:</label>
+            <input type="number" id="valorDescuento" class="form-control" placeholder="Ej. 5000 o 10" min="0" oninput="actualizarTicket()">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>Tipo:</label>
+            <select id="tipoDescuento" class="form-control" onchange="actualizarTicket()">
+              <option value="monto">$ (Fijo)</option>
+              <option value="porcentaje">% (Porcentaje)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- Vista de Tiquet -->
       <div class="ticket-box">
         <div class="ticket-header">S. B. O. CONTROL - PRESUPUESTO</div>
@@ -86,19 +109,35 @@
         <div id="ticketListaItems">
           <div style="text-align: center; color: #888; font-style: italic;">Sin ítems seleccionados</div>
         </div>
+
+        <div id="ticketSubtotalRow" class="ticket-item" style="display: none; border-top: 1px dashed #ccc; margin-top: 6px; padding-top: 4px;">
+          <span>Subtotal:</span>
+          <span id="ticketSubtotalVal">$0</span>
+        </div>
+        <div id="ticketDescuentoRow" class="ticket-item" style="display: none; color: #c62828;">
+          <span id="ticketDescuentoTexto">• Descuento:</span>
+          <span id="ticketDescuentoVal">-$0</span>
+        </div>
+
         <div class="ticket-total">
           <span>TOTAL:</span>
           <span id="ticketTotal">$0</span>
         </div>
-        <div class="ticket-footer">Validez del presupuesto: 10 días</div>
+        
+        <div class="ticket-footer">
+          Validez del presupuesto: 10 días<br>
+          <span style="font-style: italic; opacity: 0.85;">* Lista actualizada al (agosto de 2026), sujeta a variaciones según costo de vida.</span>
+        </div>
       </div>
 
+      <button class="btn-save" onclick="guardarPresupuesto(true)">💾 Guardar Presupuesto</button>
       <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar Tiquet</button>
       <button class="btn-whatsapp" onclick="enviarWhatsApp()">💬 Enviar por WhatsApp</button>
+      <button class="btn-historial" onclick="abrirModalHistorial()">📋 Ver Todos los Presupuestos</button>
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal Selección de Servicios -->
   <div id="modalServicios" class="modal-overlay">
     <div class="modal-content">
       <h3 style="margin-top:0; font-size: 0.95rem;">Seleccionar Servicios</h3>
@@ -107,14 +146,37 @@
     </div>
   </div>
 
+  <!-- Modal Historial de Presupuestos -->
+  <div id="modalHistorial" class="modal-overlay">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 6px; margin-bottom: 12px;">
+        <h3 style="margin:0; font-size: 0.95rem; color: var(--primary-color);">Presupuestos Guardados</h3>
+        <button onclick="cerrarModalHistorial()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; font-weight: bold; color: #666;">✖</button>
+      </div>
+
+      <div id="listaHistorialPresupuestos">
+        <!-- Se genera dinámicamente -->
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="btn-select" style="background:#dc2626; margin-top: 0;" onclick="vaciarHistorial()">🗑️ Borrar Todo</button>
+        <button class="btn-select" style="background:#00796b; margin-top: 0;" onclick="cerrarModalHistorial()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // Lista alineada con guia.html y licencias.html
     const preciosDefault = [
-      { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial", precio: "$10.000" },
-      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.000" },
-      { modalidad: "Llave en Mano (Pago Único)", detalle: "Contado efectivo", precio: "$45.000" },
-      { modalidad: "Llave en Mano (2 Cuotas)", detalle: "Financiado en dos partes", precio: "$50.000" },
-      { modalidad: "Llave en Mano (3 Cuotas)", detalle: "Financiado en tres partes", precio: "$60.000" },
-      { modalidad: "Membresía Mensual", detalle: "Abono mensual", precio: "$5.000 / mes" }
+      { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial + Curso", precio: "$10.000" },
+      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.500" },
+      { modalidad: "Licencia Mensual", detalle: "Abono mensual (30 días)", precio: "$5.000 / mes" },
+      { modalidad: "Licencia Semestral", detalle: "1 Pago (180 días)", precio: "$30.000" },
+      { modalidad: "Licencia Semestral", detalle: "Financiado en 2 pagos", precio: "$17.500" },
+      { modalidad: "Licencia Anual", detalle: "1 Pago (365 días)", precio: "$60.000" },
+      { modalidad: "Licencia Anual", detalle: "Financiado en 2 pagos", precio: "$32.500" },
+      { modalidad: "Licencia Anual", detalle: "Financiado en 3 pagos", precio: "$23.500" },
+      { modalidad: "Licencia de por Vida", detalle: "Pago Único (Aeternum)", precio: "$120.000" }
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -123,24 +185,37 @@
       actualizarTicket();
     });
 
+    function formatearFechaAR(fechaIso) {
+      if (!fechaIso) return "-";
+      const partes = fechaIso.split('-');
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return fechaIso;
+    }
+
     function abrirModal() { document.getElementById('modalServicios').style.display = 'flex'; }
     function cerrarModal() { document.getElementById('modalServicios').style.display = 'none'; }
+
+    function abrirModalHistorial() {
+      renderizarHistorial();
+      document.getElementById('modalHistorial').style.display = 'flex';
+    }
+    function cerrarModalHistorial() { document.getElementById('modalHistorial').style.display = 'none'; }
 
     function cargarServicios() {
       const guardados = JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
       const contenedor = document.getElementById('listaServicios');
       let html = '';
 
-      guardados.forEach((item, index) => {
+      guardados.forEach((item) => {
         let detalleFinal = item.detalle;
-        if (index === 0) detalleFinal += " + Curso Introductorio";
-        
         const valor = parseInt(item.precio.replace(/[^0-9]/g, ''), 10) || 0;
         
         html += `
           <div class="item-row">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-              <input type="checkbox" value="${valor}" data-nombre="${item.modalidad}" data-precio="${item.precio}" onchange="actualizarTicket()">
+              <input type="checkbox" value="${valor}" data-nombre="${item.modalidad}" data-detalle="${detalleFinal}" data-precio="${item.precio}" onchange="actualizarTicket()">
               <span><strong>${item.modalidad}</strong><br><small>${detalleFinal}</small></span>
             </label>
             <span style="font-weight:bold;">${item.precio}</span>
@@ -152,27 +227,32 @@
 
     function actualizarTicket() {
       const cliente = document.getElementById('nombreCliente').value.trim() || "Consumidor Final";
-      const fecha = document.getElementById('fechaPresupuesto').value || "-";
+      const fechaIso = document.getElementById('fechaPresupuesto').value;
+      const fecha = formatearFechaAR(fechaIso);
       
       document.getElementById('ticketInfoCliente').innerHTML = `Cliente: <strong>${cliente}</strong><br>Fecha: ${fecha}`;
 
       const checkboxes = document.querySelectorAll('#listaServicios input:checked');
       const contenedorItems = document.getElementById('ticketListaItems');
+      const rowSubtotal = document.getElementById('ticketSubtotalRow');
+      const rowDescuento = document.getElementById('ticketDescuentoRow');
       
       if (checkboxes.length === 0) {
         contenedorItems.innerHTML = `<div style="text-align: center; color: #888; font-style: italic;">Sin ítems seleccionados</div>`;
+        rowSubtotal.style.display = 'none';
+        rowDescuento.style.display = 'none';
         document.getElementById('ticketTotal').textContent = '$0';
         return;
       }
 
       let htmlItems = '';
-      let total = 0;
+      let subtotal = 0;
 
       checkboxes.forEach(chk => {
         const nombre = chk.dataset.nombre;
         const precioStr = chk.dataset.precio;
         const valor = parseInt(chk.value, 10) || 0;
-        total += valor;
+        subtotal += valor;
 
         htmlItems += `
           <div class="ticket-item">
@@ -183,29 +263,204 @@
       });
 
       contenedorItems.innerHTML = htmlItems;
-      document.getElementById('ticketTotal').textContent = '$' + total.toLocaleString('es-AR');
+
+      // Cálculo del descuento
+      const motivo = document.getElementById('motivoDescuento').value.trim() || "Descuento Especial";
+      const valDescNum = parseFloat(document.getElementById('valorDescuento').value) || 0;
+      const tipoDesc = document.getElementById('tipoDescuento').value;
+      
+      let montoDescuentoCalculado = 0;
+
+      if (valDescNum > 0) {
+        if (tipoDesc === 'porcentaje') {
+          montoDescuentoCalculado = Math.round((subtotal * valDescNum) / 100);
+        } else {
+          montoDescuentoCalculado = valDescNum;
+        }
+      }
+
+      if (montoDescuentoCalculado > subtotal) {
+        montoDescuentoCalculado = subtotal;
+      }
+
+      let totalFinal = subtotal - montoDescuentoCalculado;
+
+      if (montoDescuentoCalculado > 0) {
+        rowSubtotal.style.display = 'flex';
+        document.getElementById('ticketSubtotalVal').textContent = '$' + subtotal.toLocaleString('es-AR');
+
+        rowDescuento.style.display = 'flex';
+        const textoDesc = tipoDesc === 'porcentaje' ? `• Desc. (${motivo} ${valDescNum}%):` : `• Desc. (${motivo}):`;
+        document.getElementById('ticketDescuentoTexto').textContent = textoDesc;
+        document.getElementById('ticketDescuentoVal').textContent = '-$' + montoDescuentoCalculado.toLocaleString('es-AR');
+      } else {
+        rowSubtotal.style.display = 'none';
+        rowDescuento.style.display = 'none';
+      }
+
+      document.getElementById('ticketTotal').textContent = '$' + totalFinal.toLocaleString('es-AR');
     }
 
-    function enviarWhatsApp() {
-      const telefono = document.getElementById('telefonoWhatsApp').value.replace(/[^0-9]/g, '');
-      const cliente = document.getElementById('nombreCliente').value.trim() || "Cliente";
-      const fecha = document.getElementById('fechaPresupuesto').value || "-";
-      
+    // Función para guardar el presupuesto en localStorage
+    function guardarPresupuesto(notificar = false) {
+      const cliente = document.getElementById('nombreCliente').value.trim() || "Consumidor Final";
+      const fechaIso = document.getElementById('fechaPresupuesto').value;
+      const fecha = formatearFechaAR(fechaIso);
+      const telefono = document.getElementById('telefonoWhatsApp').value.trim();
+
       const checkboxes = document.querySelectorAll('#listaServicios input:checked');
       if (checkboxes.length === 0) {
-        alert("Selecciona al menos un servicio para enviar el presupuesto.");
+        if (notificar) alert("Seleccioná al menos un servicio para guardar.");
+        return false;
+      }
+
+      let items = [];
+      let subtotal = 0;
+
+      checkboxes.forEach(chk => {
+        items.push({
+          nombre: chk.dataset.nombre,
+          precio: chk.dataset.precio,
+          valor: parseInt(chk.value, 10) || 0
+        });
+        subtotal += parseInt(chk.value, 10) || 0;
+      });
+
+      const motivo = document.getElementById('motivoDescuento').value.trim() || "Descuento Especial";
+      const valDescNum = parseFloat(document.getElementById('valorDescuento').value) || 0;
+      const tipoDesc = document.getElementById('tipoDescuento').value;
+
+      let montoDescuentoCalculado = 0;
+      if (valDescNum > 0) {
+        montoDescuentoCalculado = (tipoDesc === 'porcentaje') ? Math.round((subtotal * valDescNum) / 100) : valDescNum;
+        if (montoDescuentoCalculado > subtotal) montoDescuentoCalculado = subtotal;
+      }
+
+      let totalFinal = subtotal - montoDescuentoCalculado;
+
+      const nuevoRegistro = {
+        id: Date.now(),
+        cliente,
+        fecha,
+        telefono,
+        items,
+        subtotal,
+        motivoDescuento: valDescNum > 0 ? motivo : "",
+        montoDescuento: montoDescuentoCalculado,
+        totalFinal
+      };
+
+      const historial = JSON.parse(localStorage.getItem('sbo_historial_presupuestos')) || [];
+      historial.unshift(nuevoRegistro);
+      localStorage.setItem('sbo_historial_presupuestos', JSON.stringify(historial));
+
+      if (notificar) alert("✅ Presupuesto guardado correctamente.");
+      return true;
+    }
+
+    // Renderizar registros en el modal flotante
+    function renderizarHistorial() {
+      const historial = JSON.parse(localStorage.getItem('sbo_historial_presupuestos')) || [];
+      const contenedor = document.getElementById('listaHistorialPresupuestos');
+
+      if (historial.length === 0) {
+        contenedor.innerHTML = `<div style="text-align: center; color: #888; font-style: italic; padding: 20px 0;">No hay presupuestos guardados aún.</div>`;
         return;
       }
 
-      let detalleTexto = "";
-      let total = 0;
+      let html = '';
+      historial.forEach(p => {
+        let itemsHtml = p.items.map(i => `<div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#4b5563;"><span>• ${i.nombre}</span><span>${i.precio}</span></div>`).join('');
+        
+        let descHtml = p.montoDescuento > 0 
+          ? `<div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#c62828;"><span>Desc. (${p.motivoDescuento}):</span><span>-$${p.montoDescuento.toLocaleString('es-AR')}</span></div>` 
+          : '';
 
-      checkboxes.forEach(chk => {
-        detalleTexto += `- ${chk.dataset.nombre}: ${chk.dataset.precio}\n`;
-        total += parseInt(chk.value, 10) || 0;
+        html += `
+          <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #cbd5e1; padding-bottom:4px; margin-bottom:6px;">
+              <strong style="color:var(--primary-color); font-size:0.82rem;">${p.cliente}</strong>
+              <span style="font-size:0.7rem; color:#6b7280;">📅 ${p.fecha}</span>
+            </div>
+            <div style="margin-bottom: 6px;">${itemsHtml}</div>
+            ${descHtml}
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.85rem; margin-top:6px; border-top:1px solid #e2e8f0; padding-top:4px; color:#1e293b;">
+              <span>TOTAL:</span>
+              <span style="color:var(--primary-color);">$${p.totalFinal.toLocaleString('es-AR')}</span>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:8px;">
+              <button onclick="eliminarPresupuesto(${p.id})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer; font-weight:bold;">🗑️ Borrar</button>
+            </div>
+          </div>
+        `;
       });
 
-      const mensaje = `Hola ${cliente}! Acá te envío el detalle de tu presupuesto de S.B.O. Control:\n\nFecha: ${fecha}\n\n${detalleTexto}\nTOTAL: $${total.toLocaleString('es-AR')}\n\nValidez: 10 días.\n\nS.B.O. Control.`;
+      contenedor.innerHTML = html;
+    }
+
+    function eliminarPresupuesto(id) {
+      if (confirm("¿Seguro que querés borrar este presupuesto del historial?")) {
+        let historial = JSON.parse(localStorage.getItem('sbo_historial_presupuestos')) || [];
+        historial = historial.filter(p => p.id !== id);
+        localStorage.setItem('sbo_historial_presupuestos', JSON.stringify(historial));
+        renderizarHistorial();
+      }
+    }
+
+    function vaciarHistorial() {
+      if (confirm("¿Querés borrar TODO el historial de presupuestos?")) {
+        localStorage.removeItem('sbo_historial_presupuestos');
+        renderizarHistorial();
+      }
+    }
+
+    function enviarWhatsApp() {
+      let telefono = document.getElementById('telefonoWhatsApp').value.replace(/[^0-9]/g, '');
+      
+      if (telefono.length === 10 && !telefono.startsWith('54')) {
+        telefono = '549' + telefono;
+      }
+
+      const cliente = document.getElementById('nombreCliente').value.trim() || "Cliente";
+      const fechaIso = document.getElementById('fechaPresupuesto').value;
+      const fecha = formatearFechaAR(fechaIso);
+      
+      const checkboxes = document.querySelectorAll('#listaServicios input:checked');
+      if (checkboxes.length === 0) {
+        alert("Seleccioná al menos un servicio para enviar el presupuesto.");
+        return;
+      }
+
+      // Auto-guardar en historial al enviar
+      guardarPresupuesto(false);
+
+      let detalleTexto = "";
+      let subtotal = 0;
+
+      checkboxes.forEach(chk => {
+        detalleTexto += `• ${chk.dataset.nombre}: ${chk.dataset.precio}\n`;
+        subtotal += parseInt(chk.value, 10) || 0;
+      });
+
+      const motivo = document.getElementById('motivoDescuento').value.trim() || "Descuento Especial";
+      const valDescNum = parseFloat(document.getElementById('valorDescuento').value) || 0;
+      const tipoDesc = document.getElementById('tipoDescuento').value;
+      
+      let montoDescuentoCalculado = 0;
+      if (valDescNum > 0) {
+        montoDescuentoCalculado = (tipoDesc === 'porcentaje') ? Math.round((subtotal * valDescNum) / 100) : valDescNum;
+        if (montoDescuentoCalculado > subtotal) montoDescuentoCalculado = subtotal;
+      }
+
+      let totalFinal = subtotal - montoDescuentoCalculado;
+      let textoDescuentoWS = "";
+
+      if (montoDescuentoCalculado > 0) {
+        const detalleTipo = tipoDesc === 'porcentaje' ? `${valDescNum}%` : `$${montoDescuentoCalculado.toLocaleString('es-AR')}`;
+        textoDescuentoWS = `\nSubtotal: $${subtotal.toLocaleString('es-AR')}\n🎁 ${motivo} (${detalleTipo}): -$${montoDescuentoCalculado.toLocaleString('es-AR')}\n`;
+      }
+
+      const mensaje = `Hola ${cliente}! 👋 Acá te dejo el detalle de tu presupuesto de S.B.O. Control:\n\n📅 Fecha: ${fecha}\n\n${detalleTexto}${textoDescuentoWS}\n💰 TOTAL FINAL: $${totalFinal.toLocaleString('es-AR')}\n\n⏳ Validez: 10 días.\n📌 *Lista actualizada al (agosto de 2026), sujeta a variaciones según costo de vida.\n\nS.B.O. Control`;
       
       const url = telefono ? `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}` : `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
       window.open(url, '_blank');

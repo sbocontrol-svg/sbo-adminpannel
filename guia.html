@@ -89,17 +89,16 @@
 
       <h2>Beneficios Clave para Destacar</h2>
       <ul>
-        <li><strong>Control de Stock:</strong> Sabe exactamente qué tenés y qué te falta para no colgarte en medio de la feria.</li>
+        <li><strong>Control de Stock:</strong> Sabé exactamente qué tenés y qué te falta para no colgarte en medio de la feria.</li>
         <li><strong>Gestión de Clientes:</strong> Base de datos ordenada para fidelizar a tus compradores frecuentes.</li>
         <li><strong>Ventas y Caja Chica:</strong> Registrá cada movimiento al instante y tené claro cuánto ganaste en el día.</li>
         <li><strong>Libros Diario y Mensual:</strong> Resúmenes automáticos para ver la salud financiera de tu negocio sin dolores de cabeza.</li>
-        <li><strong>Seguridad y Personalización:</strong> Poné tu propio logo, nombre de marca y manejá licencias por 30 días o vitalicias de forma súper profesional.</li>
+        <li><strong>Seguridad y Personalización:</strong> Poné tu propio logo, nombre de marca y manejá licencias mensuales, semestrales, anuales o de por vida de forma súper profesional.</li>
       </ul>
 
       <h2>Esquema de Precios y Promoción</h2>
-      <p style="font-size: 0.75rem; margin-bottom: 2px;">*Todas las modalidades incluyen <strong>15 días de prueba sin cargo, Soporte vía WhatsApp directo</strong>.</p>
-      <p style="font-size: 0.75rem; margin-bottom: 2px;">**Instalación, Curso Introductorio + Clave.</p>
-      <p style="font-size: 0.7rem; color: #555; margin-bottom: 6px;">*** La Licencia Vitalicia es de carácter anual.</p>
+      <p style="font-size: 0.75rem; margin-bottom: 2px;">*Todas las modalidades cuentan con <strong>demostración guiada y Soporte vía WhatsApp directo</strong>.</p>
+      <p style="font-size: 0.75rem; margin-bottom: 2px;">**Instalación incluye Curso Introductorio + Configuración Inicial.</p>
       
       <table>
         <thead>
@@ -110,9 +109,14 @@
           </tr>
         </thead>
         <tbody id="tablaPreciosCuerpo">
-          <!-- Se carga dinámicamente con agrupación de filas -->
+          <!-- Se carga dinámicamente -->
         </tbody>
       </table>
+
+      <!-- Párrafo aclaratorio de actualización -->
+      <p style="font-size: 0.72rem; color: #64748b; font-style: italic; margin-top: 6px; margin-bottom: 8px; text-align: center;">
+        * Lista actualizada al (agosto de 2026), sujeta a variaciones según costo de vida.
+      </p>
 
       <!-- Botón para abrir el modal flotante -->
       <button class="btn-toggle-edit" onclick="abrirModal()">⚙️ Alta y Modificación de Licencias y Precios</button>
@@ -139,15 +143,15 @@
         <form id="formAltaPrecio" onsubmit="agregarNuevoPrecio(event)">
           <div class="form-group-precios">
             <label>Modalidad / Licencia:</label>
-            <input type="text" id="nuevoModalidad" class="form-control-sm" placeholder="Ej: Licencia Vitalicia Anual" required>
+            <input type="text" id="nuevoModalidad" class="form-control-sm" placeholder="Ej: Licencia Semestral" required>
           </div>
           <div class="form-group-precios">
             <label>Detalle / Forma de Pago:</label>
-            <input type="text" id="nuevoDetalle" class="form-control-sm" placeholder="Ej: Financiado en 6 cuotas" required>
+            <input type="text" id="nuevoDetalle" class="form-control-sm" placeholder="Ej: Financiado en 2 pagos" required>
           </div>
           <div class="form-group-precios">
             <label>Precio / Valor ($):</label>
-            <input type="text" id="nuevoPrecio" class="form-control-sm" placeholder="Ej: $70.000" required>
+            <input type="text" id="nuevoPrecio" class="form-control-sm" placeholder="Ej: $17.500" required>
           </div>
           <button type="submit" class="btn-alta">➕ Agregar al Esquema</button>
         </form>
@@ -165,14 +169,16 @@
   </div>
 
   <script>
-    // Valores por defecto reestructurados
     const preciosDefault = [
-      { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial", precio: "$10.000" },
-      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.000" },
-      { modalidad: "Licencia Vitalicia Anual", detalle: "Pago Único (Contado)", precio: "$45.000" },
-      { modalidad: "Licencia Vitalicia Anual", detalle: "Financiado en 2 cuotas", precio: "$50.000" },
-      { modalidad: "Licencia Vitalicia Anual", detalle: "Financiado en 3 cuotas", precio: "$60.000" },
-      { modalidad: "Membresía Mensual", detalle: "Abono mensual", precio: "$5.000 / mes" }
+      { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial + Curso", precio: "$10.000" },
+      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.500" },
+      { modalidad: "Licencia Mensual", detalle: "Abono mensual (30 días)", precio: "$5.000 / mes" },
+      { modalidad: "Licencia Semestral", detalle: "1 Pago (180 días)", precio: "$30.000" },
+      { modalidad: "Licencia Semestral", detalle: "Financiado en 2 pagos", precio: "$17.500" },
+      { modalidad: "Licencia Anual", detalle: "1 Pago (365 días)", precio: "$60.000" },
+      { modalidad: "Licencia Anual", detalle: "Financiado en 2 pagos", precio: "$32.500" },
+      { modalidad: "Licencia Anual", detalle: "Financiado en 3 pagos", precio: "$23.500" },
+      { modalidad: "Licencia de por Vida", detalle: "Pago Único (Aeternum)", precio: "$120.000" }
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -183,7 +189,6 @@
       return JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
     }
 
-    // Carga la tabla combinando las celdas que comparten el mismo nombre de modalidad
     function cargarTablaPrecios() {
       const guardados = obtenerPreciosActuales();
       const tbody = document.getElementById('tablaPreciosCuerpo');
@@ -199,12 +204,10 @@
         let currentModalidad = guardados[i].modalidad;
         let count = 1;
 
-        // Contamos cuántas filas contiguas comparten la misma modalidad
         while (i + count < guardados.length && guardados[i + count].modalidad === currentModalidad) {
           count++;
         }
 
-        // Fila principal con rowspan
         html += `
           <tr>
             <td rowspan="${count}" style="vertical-align: middle;"><strong>${currentModalidad}</strong></td>
@@ -213,7 +216,6 @@
           </tr>
         `;
 
-        // Filas secundarias para el grupo agrupado
         for (let j = 1; j < count; j++) {
           html += `
             <tr>
