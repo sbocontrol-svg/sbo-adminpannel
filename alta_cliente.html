@@ -68,37 +68,45 @@
                 <input type="text" id="txtNombreCliente" class="form-control" placeholder="Ej: Carlos Gómez" required>
             </div>
             <div class="form-group">
-                <label>2. WhatsApp / Contacto:</label>
+                <label>2. Sucursal / Puesto / Referencia:</label>
+                <input type="text" id="txtSucursal" class="form-control" placeholder="Ej: Local Centro o Feria Sur (Opcional)">
+            </div>
+            <div class="form-group">
+                <label>3. WhatsApp / Contacto:</label>
                 <input type="text" id="txtContacto" class="form-control" placeholder="Ej: +54 9 2364..." required>
             </div>
             <div class="form-group">
-                <label>3. Correo Electrónico (E-mail):</label>
+                <label>4. Correo Electrónico (E-mail):</label>
                 <input type="email" id="txtEmail" class="form-control" placeholder="Ej: cliente@email.com">
             </div>
             <div class="form-group">
-                <label>4. Domicilio / Ciudad:</label>
+                <label>5. Domicilio / Ciudad:</label>
                 <input type="text" id="txtDomicilio" class="form-control" placeholder="Ej: Av. San Martín 123, Junín" required>
             </div>
             <div class="form-group">
-                <label>5. Tipo de Licencia:</label>
+                <label>6. Huella de Hardware (HW del Cliente):</label>
+                <input type="text" id="txtHardware" class="form-control" placeholder="Ej: HW-1A2B3C (Opcional o pegar la enviada por WhatsApp)">
+            </div>
+            <div class="form-group">
+                <label>7. Tipo de Licencia:</label>
                 <select id="selLicenciaAsignada" class="form-control" required>
                     <option value="">Cargando licencias...</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>6. Clave de Licencia:</label>
+                <label>8. Clave de Licencia:</label>
                 <div style="display: flex; gap: 6px;">
-                    <input type="text" id="txtClaveLicencia" class="form-control" placeholder="Ej: LDPV-538-CG" style="text-transform: uppercase;">
+                    <input type="text" id="txtClaveLicencia" class="form-control" placeholder="Ej: LAM-HW538-CG" style="text-transform: uppercase;">
                     <button type="button" class="btn-generar" onclick="generarClaveAlta()">⚙️ Generar</button>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>7. Desde la Fecha:</label>
+                    <label>9. Desde la Fecha:</label>
                     <input type="date" id="txtFechaInicio" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label>8. Hasta la Fecha:</label>
+                    <label>10. Hasta la Fecha:</label>
                     <input type="date" id="txtFechaFin" class="form-control" required>
                 </div>
             </div>
@@ -188,21 +196,24 @@
             const selectLicencia = document.getElementById('selLicenciaAsignada');
             const nombreLicencia = selectLicencia.value;
             const nombreCliente = document.getElementById('txtNombreCliente').value.trim();
+            let huellaHardware = document.getElementById('txtHardware').value.trim();
 
             if (!nombreLicencia) {
                 alert('¡Che, elegí una licencia del desplegable primero!');
                 return;
             }
 
+            if (!huellaHardware) {
+                huellaHardware = 'HWGEN';
+            }
+
             const acronimoLicencia = obtenerAcronimo(nombreLicencia, 'LIC');
-            const random = Math.floor(100 + Math.random() * 900);
             const acronimoCliente = obtenerAcronimo(nombreCliente, 'CLI');
 
-            const claveGenerada = `${acronimoLicencia}-${random}-${acronimoCliente}`;
+            const claveGenerada = `${acronimoLicencia}-${huellaHardware}-${acronimoCliente}`.toUpperCase();
             document.getElementById('txtClaveLicencia').value = claveGenerada;
         }
 
-        // Convierte AAAA-MM-DD a DD/MM/AAAA para mostrarlo en formato argentino
         function formatearFechaAR(fechaStr) {
             if (!fechaStr) return '-';
             const partes = fechaStr.split('-');
@@ -215,9 +226,11 @@
         document.getElementById('formCliente').addEventListener('submit', function(e) {
             e.preventDefault();
             const nombreCliente = document.getElementById('txtNombreCliente').value.trim();
+            const sucursal = document.getElementById('txtSucursal').value.trim();
             const contacto = document.getElementById('txtContacto').value.trim();
             const email = document.getElementById('txtEmail').value.trim();
             const domicilio = document.getElementById('txtDomicilio').value.trim();
+            const hardware = document.getElementById('txtHardware').value.trim() || 'HWGEN';
             const licenciaSeleccionada = document.getElementById('selLicenciaAsignada').value;
             const claveLicencia = document.getElementById('txtClaveLicencia').value.trim().toUpperCase();
             const fechaInicio = document.getElementById('txtFechaInicio').value;
@@ -233,9 +246,11 @@
             const nuevoRegistro = {
                 id: Date.now(),
                 nombreCliente,
+                sucursal: sucursal || 'Principal',
                 contacto,
                 email: email || 'Sin Email',
                 domicilio,
+                hardware,
                 licencia: licenciaSeleccionada,
                 clave: claveLicencia || 'SIN-CLAVE',
                 fechaInicio,
@@ -249,7 +264,8 @@
             let clavesCreadas = JSON.parse(localStorage.getItem('sbo_db_claves_creadas')) || [];
             clavesCreadas.unshift({
                 id: nuevoRegistro.id,
-                cliente: nombreCliente,
+                cliente: `${nombreCliente} (${sucursal || 'Principal'})`,
+                hardware: hardware,
                 licencia: licenciaSeleccionada,
                 clave: claveLicencia || 'SIN-CLAVE'
             });
@@ -274,12 +290,14 @@
 
             let html = '';
             clientes.forEach(c => {
+                const infoSucursal = c.sucursal ? ` - <span style="color:#0284c7;">📍 ${c.sucursal}</span>` : '';
                 html += `
                     <div class="cliente-item">
                         <div class="cliente-info">
-                            <strong>${c.nombreCliente}</strong>
+                            <strong>${c.nombreCliente}${infoSucursal}</strong>
                             <p>📞 Tel: ${c.contacto} | ✉️ ${c.email || 'Sin Email'}</p>
-                            <p>📍 Dir: ${c.domicilio}</p>
+                            <p>🏠 Dir: ${c.domicilio}</p>
+                            <p>💻 HW: ${c.hardware || 'HWGEN'}</p>
                             <p>🔑 Lic: <strong>${c.licencia}</strong> (${c.clave || 'Sin Clave'})</p>
                             <p>📅 Vigencia: <strong>${formatearFechaAR(c.fechaInicio)}</strong> al <strong>${formatearFechaAR(c.fechaFin)}</strong></p>
                         </div>
