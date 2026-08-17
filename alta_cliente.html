@@ -73,7 +73,7 @@
             </div>
             <div class="form-group">
                 <label>3. WhatsApp / Contacto:</label>
-                <input type="text" id="txtContacto" class="form-control" placeholder="Ej: +54 9 2364..." required>
+                <input type="text" id="txtContacto" class="form-control" value="2364502082" placeholder="Ej: 2364502082" required>
             </div>
             <div class="form-group">
                 <label>4. Correo Electrónico (E-mail):</label>
@@ -85,7 +85,7 @@
             </div>
             <div class="form-group">
                 <label>6. Huella de Hardware (HW del Cliente):</label>
-                <input type="text" id="txtHardware" class="form-control" placeholder="Ej: HW-1A2B3C (Opcional o pegar la enviada por WhatsApp)">
+                <input type="text" id="txtHardware" class="form-control" placeholder="Ej: HW-M7PRTS (Opcional o pegar la enviada por WhatsApp)">
             </div>
             <div class="form-group">
                 <label>7. Tipo de Licencia:</label>
@@ -96,7 +96,7 @@
             <div class="form-group">
                 <label>8. Clave de Licencia:</label>
                 <div style="display: flex; gap: 6px;">
-                    <input type="text" id="txtClaveLicencia" class="form-control" placeholder="Ej: LAM-HW538-CG" style="text-transform: uppercase;">
+                    <input type="text" id="txtClaveLicencia" class="form-control" placeholder="Ej: LAM-M7PR-CG" style="text-transform: uppercase;">
                     <button type="button" class="btn-generar" onclick="generarClaveAlta()">⚙️ Generar</button>
                 </div>
             </div>
@@ -195,6 +195,22 @@
             return filtradas.map(p => p[0]).join('');
         }
 
+        function extraerFragmentoHardware(hw) {
+            if (!hw || !hw.trim()) return 'GEN';
+            let limpio = hw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+            // Si arranca con HW, lo limpiamos para buscar los 4 dígitos del centro
+            if (limpio.startsWith('HW')) {
+                limpio = limpio.substring(2);
+            }
+            if (limpio.length >= 4) {
+                // Devuelve 4 dígitos centrales/representativos
+                let mitad = Math.floor(limpio.length / 2);
+                let inicio = Math.max(0, mitad - 2);
+                return limpio.substr(inicio, 4);
+            }
+            return limpio || 'GEN';
+        }
+
         function generarClaveAlta() {
             const selectLicencia = document.getElementById('selLicenciaAsignada');
             const nombreLicencia = selectLicencia.value;
@@ -206,14 +222,11 @@
                 return;
             }
 
-            if (!huellaHardware) {
-                huellaHardware = 'HWGEN';
-            }
-
             const acronimoLicencia = obtenerAcronimo(nombreLicencia, 'LIC');
             const acronimoCliente = obtenerAcronimo(nombreCliente, 'CLI');
+            const hwCorto = extraerFragmentoHardware(huellaHardware);
 
-            const claveGenerada = `${acronimoLicencia}-${huellaHardware}-${acronimoCliente}`.toUpperCase();
+            const claveGenerada = `${acronimoLicencia}-${hwCorto}-${acronimoCliente}`.toUpperCase();
             document.getElementById('txtClaveLicencia').value = claveGenerada;
         }
 
@@ -230,7 +243,7 @@
             e.preventDefault();
             const nombreCliente = document.getElementById('txtNombreCliente').value.trim();
             const sucursal = document.getElementById('txtSucursal').value.trim();
-            const contacto = document.getElementById('txtContacto').value.trim();
+            const contacto = document.getElementById('txtContacto').value.trim() || '2364502082';
             const email = document.getElementById('txtEmail').value.trim();
             const domicilio = document.getElementById('txtDomicilio').value.trim();
             const hardware = document.getElementById('txtHardware').value.trim() || 'HWGEN';
@@ -244,7 +257,6 @@
                 return;
             }
 
-            // Crear el archivo .sbo con los datos de configuración
             const datosConfig = {
                 id: Date.now(),
                 nombreCliente,
@@ -261,10 +273,14 @@
 
             const jsonString = JSON.stringify(datosConfig, null, 2);
             ultimoArchivoBlob = new Blob([jsonString], { type: 'application/json' });
-            const limpiarNombre = nombreCliente.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            ultimoNombreArchivo = `licencia_${limpiarNombre}.sbo`;
+            
+            const limpiarNombre = nombreCliente.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]/g, '_')
+                .replace(/_+/g, '_');
+            
+            ultimoNombreArchivo = `${limpiarNombre}.sbo`;
 
-            // Descargar el archivo automáticamente
             const url = URL.createObjectURL(ultimoArchivoBlob);
             const a = document.createElement('a');
             a.href = url;
@@ -295,10 +311,10 @@
             localStorage.setItem('sbo_db_claves_creadas', JSON.stringify(clavesCreadas));
             
             this.reset();
+            document.getElementById('txtContacto').value = '2364502082';
             document.getElementById('txtFechaInicio').value = new Date().toISOString().split('T')[0];
             cargarSelectLicencias();
             
-            // Armar mensaje para WhatsApp con el texto IMPORTANTE y pasos a seguir
             const textoMensaje = `¡Hola ${nombreCliente}! 👋 Acá te envío tu licencia oficial para *SBO Control*.\n\n` +
                 `📋 *Detalles de tu cuenta:*\n` +
                 `• Licencia: ${licenciaSeleccionada}\n` +
@@ -313,10 +329,10 @@
                 `Cualquier duda, escribime por acá. ¡Muchas gracias! 🙌`;
 
             let telefonoLimpio = contacto.replace(/[^0-9]/g, '');
-            const urlWa = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(textoMensaje)}`;
+            const urlWa = `https://api.whatsapp.com/send?phone=${telefonoLimpio}&text=` + encodeURIComponent(textoMensaje);
             window.open(urlWa, '_blank');
 
-            alert('¡Cliente registrado y archivo .sbo generado con éxito!');
+            alert('¡Cliente registrado, archivo .sbo descargado y WhatsApp abierto con éxito!');
             abrirModalClientes();
         });
 
