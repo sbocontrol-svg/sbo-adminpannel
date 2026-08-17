@@ -8,26 +8,27 @@
     <meta name="theme-color" content="#0d1b2a">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #0d1b2a; color: #333; padding: 16px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .modal-content { background: #f8f9fa; width: 100%; max-width: 400px; padding: 20px; border-radius: 16px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .modal-content h2 { font-size: 16px; color: #0d47a1; margin-bottom: 12px; text-align: center; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #333; margin-bottom: 4px; }
-        .input-con-icono { display: flex; gap: 6px; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
-        .btn-toggle { background: #e0f2f1; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; cursor: pointer; font-size: 18px; }
-        .btn-ingresar { background-color: #2e7d32; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 6px; }
-        .error-msg { color: #c62828; font-size: 11px; text-align: center; margin-top: 8px; display: none; }
+        body { background-color: #0d1b2a; color: #333; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 18px; }
+        .modal-content { background: #f8f9fa; width: 100%; max-width: 440px; padding: 28px; border-radius: 20px; text-align: left; box-shadow: 0 6px 25px rgba(0,0,0,0.5); }
+        .modal-content h2 { font-size: 20px; color: #0d47a1; margin-bottom: 16px; text-align: center; font-weight: 800; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 15px; font-weight: 700; color: #333; margin-bottom: 8px; }
+        .input-con-icono { display: flex; gap: 8px; }
+        .form-control { width: 100%; padding: 14px; border: 2px solid #ccc; border-radius: 10px; font-size: 18px; font-weight: bold; color: #0d1b2a; }
+        .btn-toggle { background: #e0f2f1; border: 2px solid #ccc; border-radius: 10px; padding: 0 16px; cursor: pointer; font-size: 22px; }
+        .btn-ingresar { background-color: #2e7d32; color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 17px; font-weight: 800; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.3); }
+        .error-msg { color: #c62828; font-size: 14px; text-align: center; margin-top: 12px; font-weight: 700; display: none; }
     </style>
 </head>
 <body>
     <div class="modal-content">
         <h2>🔐 Acceso Restringido S.B.O.</h2>
         <div class="form-group">
-            <label>Ingresá la Clave Maestra:</label>
+            <label>Clave Maestra (Visible):</label>
             <div class="input-con-icono">
-                <input type="password" id="txtClaveMaestra" class="form-control" placeholder="Clave exclusiva..." required>
-                <button type="button" id="btnToggle" class="btn-toggle" onclick="togglePassword()" title="Ver / Ocultar clave">🙈</button>
+                <!-- Cambiado de type="password" a type="text" y precargada la clave -->
+                <input type="text" id="txtClaveMaestra" class="form-control" value="2016" placeholder="Clave exclusiva..." required>
+                <button type="button" id="btnToggle" class="btn-toggle" onclick="togglePassword()" title="Bloquear / Desbloquear vista">🔒</button>
             </div>
         </div>
         <button class="btn-ingresar" onclick="verificarClave()">🔓 Ingresar al Sistema</button>
@@ -35,17 +36,17 @@
     </div>
 
     <script>
-        const CLAVE_MAESTRA_SECRETA = "SBO-2026-JMB";
+        const CLAVE_MAESTRA_SECRETA = "2016";
 
         function togglePassword() {
             const input = document.getElementById('txtClaveMaestra');
             const btn = document.getElementById('btnToggle');
-            if (input.type === 'password') {
-                input.type = 'text';
+            if (input.type === 'text') {
+                input.type = 'password';
                 btn.innerText = '👁️';
             } else {
-                input.type = 'password';
-                btn.innerText = '🙈';
+                input.type = 'text';
+                btn.innerText = '🔒';
             }
         }
 

@@ -110,7 +110,7 @@
                     <input type="date" id="txtFechaFin" class="form-control" required>
                 </div>
             </div>
-            <button type="submit" class="btn-primary">💾 Registrar Cliente</button>
+            <button type="submit" class="btn-primary">💾 Registrar Cliente y Generar Archivo .sbo</button>
         </form>
 
         <button type="button" class="btn-historial" onclick="abrirModalClientes()">👥 Ver Clientes Registrados</button>
@@ -133,6 +133,9 @@
     </div>
 
     <script>
+        let ultimoArchivoBlob = null;
+        let ultimoNombreArchivo = "";
+
         document.addEventListener('DOMContentLoaded', () => {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('txtFechaInicio').value = hoy;
@@ -241,20 +244,40 @@
                 return;
             }
 
-            let clientes = JSON.parse(localStorage.getItem('sbo_db_clientes')) || [];
-            
-            const nuevoRegistro = {
+            // Crear el archivo .sbo con los datos de configuración
+            const datosConfig = {
                 id: Date.now(),
                 nombreCliente,
                 sucursal: sucursal || 'Principal',
                 contacto,
-                email: email || 'Sin Email',
+                email,
                 domicilio,
                 hardware,
                 licencia: licenciaSeleccionada,
                 clave: claveLicencia || 'SIN-CLAVE',
                 fechaInicio,
-                fechaFin,
+                fechaFin
+            };
+
+            const jsonString = JSON.stringify(datosConfig, null, 2);
+            ultimoArchivoBlob = new Blob([jsonString], { type: 'application/json' });
+            const limpiarNombre = nombreCliente.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            ultimoNombreArchivo = `licencia_${limpiarNombre}.sbo`;
+
+            // Descargar el archivo automáticamente
+            const url = URL.createObjectURL(ultimoArchivoBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = ultimoNombreArchivo;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            let clientes = JSON.parse(localStorage.getItem('sbo_db_clientes')) || [];
+            
+            const nuevoRegistro = {
+                ...datosConfig,
                 fechaRegistro: new Date().toLocaleDateString('es-AR')
             };
 
@@ -275,7 +298,25 @@
             document.getElementById('txtFechaInicio').value = new Date().toISOString().split('T')[0];
             cargarSelectLicencias();
             
-            alert('¡Cliente registrado con éxito!');
+            // Armar mensaje para WhatsApp con el texto IMPORTANTE y pasos a seguir
+            const textoMensaje = `¡Hola ${nombreCliente}! 👋 Acá te envío tu licencia oficial para *SBO Control*.\n\n` +
+                `📋 *Detalles de tu cuenta:*\n` +
+                `• Licencia: ${licenciaSeleccionada}\n` +
+                `• Clave de Acceso: *${claveLicencia || 'SIN-CLAVE'}*\n\n` +
+                `----------------------------------------\n` +
+                `📥 *IMPORTANTE - PASOS A SEGUIR:*\n` +
+                `1️⃣ Descargá el archivo adjunto (*${ultimoNombreArchivo}*) que acabo de generarte.\n` +
+                `2️⃣ Entrá a la aplicación SBO Control en tu celular.\n` +
+                `3️⃣ En la pantalla principal, tocá el botón azul *'📥 Importar Archivo .sbo'* y seleccioná este archivo.\n` +
+                `4️⃣ ¡Listo! La app configurará tu acceso de forma automática para que puedas empezar a usarla.\n` +
+                `----------------------------------------\n` +
+                `Cualquier duda, escribime por acá. ¡Muchas gracias! 🙌`;
+
+            let telefonoLimpio = contacto.replace(/[^0-9]/g, '');
+            const urlWa = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(textoMensaje)}`;
+            window.open(urlWa, '_blank');
+
+            alert('¡Cliente registrado y archivo .sbo generado con éxito!');
             abrirModalClientes();
         });
 
