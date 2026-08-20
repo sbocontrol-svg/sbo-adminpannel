@@ -270,7 +270,7 @@
                 fechaFin
             };
 
-            // 1. Guardar en Supabase (Nube)
+            // 1. Guardar en Supabase (Nube) con alertas de diagnóstico
             try {
                 const { error } = await supabaseClient
                     .from('clientes')
@@ -291,9 +291,13 @@
                 
                 if (error) {
                     console.error('Error al guardar en Supabase:', error);
+                    alert('Error de Supabase: ' + JSON.stringify(error));
+                } else {
+                    alert('¡Éxito! El cliente se guardó en Supabase.');
                 }
             } catch (err) {
                 console.error('Excepción al conectar con Supabase:', err);
+                alert('Excepción de red/conexión: ' + err.message);
             }
 
             const jsonString = JSON.stringify(datosConfig, null, 2);
