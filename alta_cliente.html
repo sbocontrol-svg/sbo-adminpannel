@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.B.O. Control - Alta de Cliente</title>
+    <!-- Script de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: #0d1b2a; color: #333; padding: 12px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -68,33 +70,29 @@
                 <input type="text" id="txtNombreCliente" class="form-control" placeholder="Ej: Carlos Gómez" required>
             </div>
             <div class="form-group">
-                <label>2. Sucursal / Puesto / Referencia:</label>
-                <input type="text" id="txtSucursal" class="form-control" placeholder="Ej: Local Centro o Feria Sur (Opcional)">
+                <label>2. WhatsApp / Contacto:</label>
+                <input type="text" id="txtContacto" class="form-control" value="2364xxxxxx" placeholder="Ej: 2364xxxxxx" required>
             </div>
             <div class="form-group">
-                <label>3. WhatsApp / Contacto:</label>
-                <input type="text" id="txtContacto" class="form-control" value="2364502082" placeholder="Ej: 2364502082" required>
-            </div>
-            <div class="form-group">
-                <label>4. Correo Electrónico (E-mail):</label>
+                <label>3. Correo Electrónico (E-mail):</label>
                 <input type="email" id="txtEmail" class="form-control" placeholder="Ej: cliente@email.com">
             </div>
             <div class="form-group">
-                <label>5. Domicilio / Ciudad:</label>
+                <label>4. Domicilio / Ciudad:</label>
                 <input type="text" id="txtDomicilio" class="form-control" placeholder="Ej: Av. San Martín 123, Junín" required>
             </div>
             <div class="form-group">
-                <label>6. Huella de Hardware (HW del Cliente):</label>
+                <label>5. Huella de Hardware (HW del Cliente):</label>
                 <input type="text" id="txtHardware" class="form-control" placeholder="Ej: HW-M7PRTS (Opcional o pegar la enviada por WhatsApp)">
             </div>
             <div class="form-group">
-                <label>7. Tipo de Licencia:</label>
+                <label>6. Tipo de Licencia:</label>
                 <select id="selLicenciaAsignada" class="form-control" required>
                     <option value="">Cargando licencias...</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>8. Clave de Licencia:</label>
+                <label>7. Clave de Licencia:</label>
                 <div style="display: flex; gap: 6px;">
                     <input type="text" id="txtClaveLicencia" class="form-control" placeholder="Ej: LAM-M7PR-CG" style="text-transform: uppercase;">
                     <button type="button" class="btn-generar" onclick="generarClaveAlta()">⚙️ Generar</button>
@@ -102,11 +100,11 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>9. Desde la Fecha:</label>
+                    <label>8. Desde la Fecha:</label>
                     <input type="date" id="txtFechaInicio" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label>10. Hasta la Fecha:</label>
+                    <label>9. Hasta la Fecha:</label>
                     <input type="date" id="txtFechaFin" class="form-control" required>
                 </div>
             </div>
@@ -133,6 +131,11 @@
     </div>
 
     <script>
+        // Configuración de Supabase (Reemplazá con tus datos de Project Settings > API)
+        const SUPABASE_URL = 'https://sjtuddayrwyqclskxzk.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_txQwdZRHeV-NdODshrPbGw_MSYR1Ag6';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let ultimoArchivoBlob = null;
         let ultimoNombreArchivo = "";
 
@@ -198,12 +201,10 @@
         function extraerFragmentoHardware(hw) {
             if (!hw || !hw.trim()) return 'GEN';
             let limpio = hw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-            // Si arranca con HW, lo limpiamos para buscar los 4 dígitos del centro
             if (limpio.startsWith('HW')) {
                 limpio = limpio.substring(2);
             }
             if (limpio.length >= 4) {
-                // Devuelve 4 dígitos centrales/representativos
                 let mitad = Math.floor(limpio.length / 2);
                 let inicio = Math.max(0, mitad - 2);
                 return limpio.substr(inicio, 4);
@@ -239,10 +240,9 @@
             return fechaStr;
         }
 
-        document.getElementById('formCliente').addEventListener('submit', function(e) {
+        document.getElementById('formCliente').addEventListener('submit', async function(e) {
             e.preventDefault();
             const nombreCliente = document.getElementById('txtNombreCliente').value.trim();
-            const sucursal = document.getElementById('txtSucursal').value.trim();
             const contacto = document.getElementById('txtContacto').value.trim() || '2364502082';
             const email = document.getElementById('txtEmail').value.trim();
             const domicilio = document.getElementById('txtDomicilio').value.trim();
@@ -260,7 +260,6 @@
             const datosConfig = {
                 id: Date.now(),
                 nombreCliente,
-                sucursal: sucursal || 'Principal',
                 contacto,
                 email,
                 domicilio,
@@ -270,6 +269,32 @@
                 fechaInicio,
                 fechaFin
             };
+
+            // 1. Guardar en Supabase (Nube)
+            try {
+                const { error } = await supabaseClient
+                    .from('clientes')
+                    .insert([
+                        {
+                            nombreCliente,
+                            contacto,
+                            email,
+                            domicilio,
+                            hardware,
+                            licencia: licenciaSeleccionada,
+                            clave: claveLicencia || 'SIN-CLAVE',
+                            fechaInicio,
+                            fechaFin,
+                            fechaRegistro: new Date().toLocaleDateString('es-AR')
+                        }
+                    ]);
+                
+                if (error) {
+                    console.error('Error al guardar en Supabase:', error);
+                }
+            } catch (err) {
+                console.error('Excepción al conectar con Supabase:', err);
+            }
 
             const jsonString = JSON.stringify(datosConfig, null, 2);
             ultimoArchivoBlob = new Blob([jsonString], { type: 'application/json' });
@@ -290,20 +315,19 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
+            // Respaldo local en localStorage por las dudas
             let clientes = JSON.parse(localStorage.getItem('sbo_db_clientes')) || [];
-            
             const nuevoRegistro = {
                 ...datosConfig,
                 fechaRegistro: new Date().toLocaleDateString('es-AR')
             };
-
             clientes.push(nuevoRegistro);
             localStorage.setItem('sbo_db_clientes', JSON.stringify(clientes));
 
             let clavesCreadas = JSON.parse(localStorage.getItem('sbo_db_claves_creadas')) || [];
             clavesCreadas.unshift({
                 id: nuevoRegistro.id,
-                cliente: `${nombreCliente} (${sucursal || 'Principal'})`,
+                cliente: nombreCliente,
                 hardware: hardware,
                 licencia: licenciaSeleccionada,
                 clave: claveLicencia || 'SIN-CLAVE'
@@ -321,18 +345,28 @@
                 `• Clave de Acceso: *${claveLicencia || 'SIN-CLAVE'}*\n\n` +
                 `----------------------------------------\n` +
                 `📥 *IMPORTANTE - PASOS A SEGUIR:*\n` +
-                `1️⃣ Descargá el archivo adjunto (*${ultimoNombreArchivo}*) que acabo de generarte.\n` +
+                `1️⃣ Descargá el archivo adjunto (*${ultimoNombreArchivo}*).\n` +
+                `   *(📌 Lo vas a encontrar en la carpeta: Almacenamiento interno -> WhatsApp -> Media -> WhatsApp Documents)*\n` +
                 `2️⃣ Entrá a la aplicación SBO Control en tu celular.\n` +
-                `3️⃣ En la pantalla principal, tocá el botón azul *'📥 Importar Archivo .sbo'* y seleccioná este archivo.\n` +
-                `4️⃣ ¡Listo! La app configurará tu acceso de forma automática para que puedas empezar a usarla.\n` +
+                `3️⃣ En la pantalla principal, tocá el botón azul *'📥 Importar Archivo .sbo'* y buscalo ahí.\n` +
+                `4️⃣ ¡Listo! La app configurará tu acceso de forma automática para empezar a usarla.\n` +
+                `----------------------------------------\n` +
+                `🚨 *¡ATENCIÓN!* NO BORRES este mensaje ni el archivo adjunto por nada del mundo, ya que te sirve como respaldo de seguridad de tu licencia.\n` +
                 `----------------------------------------\n` +
                 `Cualquier duda, escribime por acá. ¡Muchas gracias! 🙌`;
 
-            let telefonoLimpio = contacto.replace(/[^0-9]/g, '');
-            const urlWa = `https://api.whatsapp.com/send?phone=${telefonoLimpio}&text=` + encodeURIComponent(textoMensaje);
-            window.open(urlWa, '_blank');
+            navigator.clipboard.writeText(textoMensaje).then(() => {
+                let telefonoLimpio = contacto.replace(/[^0-9]/g, '');
+                const urlWa = `https://api.whatsapp.com/send?phone=${telefonoLimpio}&text=` + encodeURIComponent(textoMensaje);
+                
+                let abrirWpp = confirm(`¡Cliente registrado en la nube y archivo .sbo descargado!\n\n📋 El mensaje se COPIÓ AL PORTAPAPELES.\n\n¿Querés abrir WhatsApp ahora?`);
+                if (abrirWpp) {
+                    window.open(urlWa, '_blank');
+                }
+            }).catch(err => {
+                alert('Cliente registrado, pero falló al copiar al portapapeles.');
+            });
 
-            alert('¡Cliente registrado, archivo .sbo descargado y WhatsApp abierto con éxito!');
             abrirModalClientes();
         });
 
@@ -347,11 +381,10 @@
 
             let html = '';
             clientes.forEach(c => {
-                const infoSucursal = c.sucursal ? ` - <span style="color:#0284c7;">📍 ${c.sucursal}</span>` : '';
                 html += `
                     <div class="cliente-item">
                         <div class="cliente-info">
-                            <strong>${c.nombreCliente}${infoSucursal}</strong>
+                            <strong>${c.nombreCliente}</strong>
                             <p>📞 Tel: ${c.contacto} | ✉️ ${c.email || 'Sin Email'}</p>
                             <p>🏠 Dir: ${c.domicilio}</p>
                             <p>💻 HW: ${c.hardware || 'HWGEN'}</p>
