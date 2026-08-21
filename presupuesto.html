@@ -44,7 +44,7 @@
     .btn-print { background: var(--primary-color); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 10px; cursor: pointer; }
     .btn-whatsapp { background: #0277bd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; }
     .btn-save { background: #2e7d32; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; }
-    .btn-historial { background: #374151; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; }
+    .btn-historial { background: #374151; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center; }
 
     @media print {
       body { background: white; padding: 0; }
@@ -133,7 +133,7 @@
       <button class="btn-save" onclick="guardarPresupuesto(true)">💾 Guardar Presupuesto</button>
       <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar Tiquet</button>
       <button class="btn-whatsapp" onclick="enviarWhatsApp()">💬 Enviar por WhatsApp</button>
-      <button class="btn-historial" onclick="abrirModalHistorial()">📋 Ver Todos los Presupuestos</button>
+      <a href="visor_presupuesto.html" class="btn-historial">📋 Ver Todos los Presupuestos</a>
     </div>
   </div>
 
@@ -146,27 +146,7 @@
     </div>
   </div>
 
-  <!-- Modal Historial de Presupuestos -->
-  <div id="modalHistorial" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 6px; margin-bottom: 12px;">
-        <h3 style="margin:0; font-size: 0.95rem; color: var(--primary-color);">Presupuestos Guardados</h3>
-        <button onclick="cerrarModalHistorial()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; font-weight: bold; color: #666;">✖</button>
-      </div>
-
-      <div id="listaHistorialPresupuestos">
-        <!-- Se genera dinámicamente -->
-      </div>
-
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <button class="btn-select" style="background:#dc2626; margin-top: 0;" onclick="vaciarHistorial()">🗑️ Borrar Todo</button>
-        <button class="btn-select" style="background:#00796b; margin-top: 0;" onclick="cerrarModalHistorial()">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Lista alineada con guia.html y licencias.html
     const preciosDefault = [
       { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial + Curso", precio: "$10.000" },
       { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.500" },
@@ -180,7 +160,13 @@
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('fechaPresupuesto').valueAsDate = new Date();
+      // Corrección de fecha local sin desfasaje por UTC
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      document.getElementById('fechaPresupuesto').value = `${yyyy}-${mm}-${dd}`;
+
       cargarServicios();
       actualizarTicket();
     });
@@ -196,12 +182,6 @@
 
     function abrirModal() { document.getElementById('modalServicios').style.display = 'flex'; }
     function cerrarModal() { document.getElementById('modalServicios').style.display = 'none'; }
-
-    function abrirModalHistorial() {
-      renderizarHistorial();
-      document.getElementById('modalHistorial').style.display = 'flex';
-    }
-    function cerrarModalHistorial() { document.getElementById('modalHistorial').style.display = 'none'; }
 
     function cargarServicios() {
       const guardados = JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
@@ -264,7 +244,6 @@
 
       contenedorItems.innerHTML = htmlItems;
 
-      // Cálculo del descuento
       const motivo = document.getElementById('motivoDescuento').value.trim() || "Descuento Especial";
       const valDescNum = parseFloat(document.getElementById('valorDescuento').value) || 0;
       const tipoDesc = document.getElementById('tipoDescuento').value;
@@ -301,7 +280,6 @@
       document.getElementById('ticketTotal').textContent = '$' + totalFinal.toLocaleString('es-AR');
     }
 
-    // Función para guardar el presupuesto en localStorage
     function guardarPresupuesto(notificar = false) {
       const cliente = document.getElementById('nombreCliente').value.trim() || "Consumidor Final";
       const fechaIso = document.getElementById('fechaPresupuesto').value;
@@ -358,62 +336,6 @@
       return true;
     }
 
-    // Renderizar registros en el modal flotante
-    function renderizarHistorial() {
-      const historial = JSON.parse(localStorage.getItem('sbo_historial_presupuestos')) || [];
-      const contenedor = document.getElementById('listaHistorialPresupuestos');
-
-      if (historial.length === 0) {
-        contenedor.innerHTML = `<div style="text-align: center; color: #888; font-style: italic; padding: 20px 0;">No hay presupuestos guardados aún.</div>`;
-        return;
-      }
-
-      let html = '';
-      historial.forEach(p => {
-        let itemsHtml = p.items.map(i => `<div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#4b5563;"><span>• ${i.nombre}</span><span>${i.precio}</span></div>`).join('');
-        
-        let descHtml = p.montoDescuento > 0 
-          ? `<div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#c62828;"><span>Desc. (${p.motivoDescuento}):</span><span>-$${p.montoDescuento.toLocaleString('es-AR')}</span></div>` 
-          : '';
-
-        html += `
-          <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #cbd5e1; padding-bottom:4px; margin-bottom:6px;">
-              <strong style="color:var(--primary-color); font-size:0.82rem;">${p.cliente}</strong>
-              <span style="font-size:0.7rem; color:#6b7280;">📅 ${p.fecha}</span>
-            </div>
-            <div style="margin-bottom: 6px;">${itemsHtml}</div>
-            ${descHtml}
-            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.85rem; margin-top:6px; border-top:1px solid #e2e8f0; padding-top:4px; color:#1e293b;">
-              <span>TOTAL:</span>
-              <span style="color:var(--primary-color);">$${p.totalFinal.toLocaleString('es-AR')}</span>
-            </div>
-            <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:8px;">
-              <button onclick="eliminarPresupuesto(${p.id})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer; font-weight:bold;">🗑️ Borrar</button>
-            </div>
-          </div>
-        `;
-      });
-
-      contenedor.innerHTML = html;
-    }
-
-    function eliminarPresupuesto(id) {
-      if (confirm("¿Seguro que querés borrar este presupuesto del historial?")) {
-        let historial = JSON.parse(localStorage.getItem('sbo_historial_presupuestos')) || [];
-        historial = historial.filter(p => p.id !== id);
-        localStorage.setItem('sbo_historial_presupuestos', JSON.stringify(historial));
-        renderizarHistorial();
-      }
-    }
-
-    function vaciarHistorial() {
-      if (confirm("¿Querés borrar TODO el historial de presupuestos?")) {
-        localStorage.removeItem('sbo_historial_presupuestos');
-        renderizarHistorial();
-      }
-    }
-
     function enviarWhatsApp() {
       let telefono = document.getElementById('telefonoWhatsApp').value.replace(/[^0-9]/g, '');
       
@@ -431,7 +353,6 @@
         return;
       }
 
-      // Auto-guardar en historial al enviar
       guardarPresupuesto(false);
 
       let detalleTexto = "";

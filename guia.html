@@ -32,30 +32,7 @@
     th, td { border: 1px solid #d1d5db; padding: 6px; text-align: left; }
     th { background: #f3f4f6; color: #1f2937; }
 
-    /* Estilos para el modal flotante */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 12px; }
-    .modal-content { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
-    .modal-header h3 { font-size: 0.9rem; color: #0f172a; margin: 0; }
-    .btn-cerrar-modal { background: none; border: none; font-size: 1rem; cursor: pointer; color: #64748b; font-weight: bold; }
-    
-    .seccion-alta { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
-    .seccion-titulo { font-size: 0.75rem; font-weight: bold; color: var(--primary-color); margin-bottom: 6px; }
-
-    .form-group-precios { margin-bottom: 6px; }
-    .form-group-precios label { display: block; font-size: 0.68rem; font-weight: bold; color: #475569; margin-bottom: 2px; }
-    .form-control-sm { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.75rem; }
-    
-    .btn-alta { background: #2e7d32; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.75rem; margin-top: 6px; cursor: pointer; }
-    .btn-alta:active { transform: scale(0.98); }
-
-    .btn-accion { background: #0277bd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.8rem; margin-top: 10px; cursor: pointer; }
-    .btn-accion:active { transform: scale(0.98); }
-
-    .item-edit-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-bottom: 8px; position: relative; }
-    .btn-eliminar-item { position: absolute; top: 6px; right: 6px; background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
-
-    .btn-toggle-edit { background: #475569; color: white; border: none; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
+    .btn-toggle-edit { background: #475569; color: white; border: none; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; text-decoration: none; display: block; text-align: center; }
 
     .btn-print { background: var(--primary-color); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 0.85rem; margin-top: 14px; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
     .btn-print:active { transform: scale(0.98); }
@@ -66,7 +43,7 @@
       body { background: white; padding: 0; align-items: flex-start; }
       .container { max-width: 100%; }
       .card { box-shadow: none; padding: 0; }
-      .btn-print, .btn-volver, .btn-toggle-edit, .modal-overlay { display: none !important; }
+      .btn-print, .btn-volver, .btn-toggle-edit { display: none !important; }
     }
   </style>
 </head>
@@ -109,17 +86,15 @@
           </tr>
         </thead>
         <tbody id="tablaPreciosCuerpo">
-          <!-- Se carga dinámicamente -->
+          <!-- Carga dinámica -->
         </tbody>
       </table>
 
-      <!-- Párrafo aclaratorio de actualización -->
       <p style="font-size: 0.72rem; color: #64748b; font-style: italic; margin-top: 6px; margin-bottom: 8px; text-align: center;">
-        * Lista actualizada al (agosto de 2026), sujeta a variaciones según costo de vida.
+        * Precios sincronizados con la Gestión de Licencias.
       </p>
 
-      <!-- Botón para abrir el modal flotante -->
-      <button class="btn-toggle-edit" onclick="abrirModal()">⚙️ Alta y Modificación de Licencias y Precios</button>
+      <a href="licencias.html" class="btn-toggle-edit">🔑 Ir a Gestión de Licencias / Precios</a>
 
       <button class="btn-print" onclick="window.print()">🖨️ Guardar como PDF / Imprimir</button>
 
@@ -129,196 +104,65 @@
     </div>
   </div>
 
-  <!-- Modal Flotante de Alta y Edición -->
-  <div id="modalEditor" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Alta y Modificación de Licencias y Precios</h3>
-        <button class="btn-cerrar-modal" onclick="cerrarModal()">✕</button>
-      </div>
-
-      <!-- SECCIÓN 1: DAR DE ALTA UNA NUEVA MODALIDAD -->
-      <div class="seccion-alta">
-        <div class="seccion-titulo">➕ Dar de Alta Nueva Licencia / Opción</div>
-        <form id="formAltaPrecio" onsubmit="agregarNuevoPrecio(event)">
-          <div class="form-group-precios">
-            <label>Modalidad / Licencia:</label>
-            <input type="text" id="nuevoModalidad" class="form-control-sm" placeholder="Ej: Licencia Semestral" required>
-          </div>
-          <div class="form-group-precios">
-            <label>Detalle / Forma de Pago:</label>
-            <input type="text" id="nuevoDetalle" class="form-control-sm" placeholder="Ej: Financiado en 2 pagos" required>
-          </div>
-          <div class="form-group-precios">
-            <label>Precio / Valor ($):</label>
-            <input type="text" id="nuevoPrecio" class="form-control-sm" placeholder="Ej: $17.500" required>
-          </div>
-          <button type="submit" class="btn-alta">➕ Agregar al Esquema</button>
-        </form>
-      </div>
-
-      <!-- SECCIÓN 2: EDITAR O ELIMINAR EXISTENTES -->
-      <div class="seccion-titulo" style="margin-top: 10px;">✏️ Modificar o Eliminar Licencias Existentes</div>
-      <form id="formPrecios" onsubmit="guardarPreciosEditados(event)">
-        <div id="contenedorLicenciasEditables">
-          <!-- Se renderizan dinámicamente -->
-        </div>
-        <button type="submit" class="btn-accion">💾 Guardar Todos los Cambios</button>
-      </form>
-    </div>
-  </div>
-
   <script>
-    const preciosDefault = [
+    // 1. Servicios Fijos Base
+    const serviciosBase = [
       { modalidad: "Costo de Instalación", detalle: "Puesta a marcha inicial + Curso", precio: "$10.000" },
-      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.500" },
-      { modalidad: "Licencia Mensual", detalle: "Abono mensual (30 días)", precio: "$5.000 / mes" },
+      { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.500" }
+    ];
+
+    // 2. Licencias Comercializables por Defecto (si no hay nada cargado en licencias.html todavía)
+    const licenciasComercialesDefault = [
+      { modalidad: "Licencia Mensual", detalle: "Abono mensual (30 días)", precio: "$5.000" },
       { modalidad: "Licencia Semestral", detalle: "1 Pago (180 días)", precio: "$30.000" },
-      { modalidad: "Licencia Semestral", detalle: "Financiado en 2 pagos", precio: "$17.500" },
       { modalidad: "Licencia Anual", detalle: "1 Pago (365 días)", precio: "$60.000" },
-      { modalidad: "Licencia Anual", detalle: "Financiado en 2 pagos", precio: "$32.500" },
-      { modalidad: "Licencia Anual", detalle: "Financiado en 3 pagos", precio: "$23.500" },
-      { modalidad: "Licencia de por Vida", detalle: "Pago Único (Aeternum)", precio: "$120.000" }
+      { modalidad: "Licencia Vitalicia", detalle: "Pago Único (De por Vida)", precio: "$120.000" }
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
       cargarTablaPrecios();
     });
 
-    function obtenerPreciosActuales() {
-      return JSON.parse(localStorage.getItem('sbo_precios_guia')) || preciosDefault;
+    function obtenerLicenciasSincronizadas() {
+      // Leemos lo que haya guardado en licencias.html (si existe)
+      let dbLicencias = JSON.parse(localStorage.getItem('sbo_db_licencias_personalizadas')) || [];
+
+      if (dbLicencias.length === 0) {
+        // Si no hay nada cargado aún, devolvemos las 4 comerciales por defecto
+        return licenciasComercialesDefault;
+      }
+
+      // Si ya hay licencias cargadas en la BD, mapeamos y aseguramos el formato
+      return dbLicencias.map(item => {
+        let pVal = parseFloat(item.precio || item.costo || item.valor || 0) || 0;
+        let precioFormat = pVal > 0 ? "$" + pVal.toLocaleString('es-AR') : (item.precioStr || "A consultar");
+        
+        return {
+          modalidad: item.nombreLicencia || item.nombre || "Licencia",
+          detalle: item.duracion || item.detalle || "Uso del sistema",
+          precio: precioFormat
+        };
+      });
     }
 
     function cargarTablaPrecios() {
-      const guardados = obtenerPreciosActuales();
+      const licencias = obtenerLicenciasSincronizadas();
+      const listaCompleta = [...serviciosBase, ...licencias];
+      
       const tbody = document.getElementById('tablaPreciosCuerpo');
       let html = '';
-      
-      if (guardados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">No hay precios cargados.</td></tr>';
-        return;
-      }
 
-      let i = 0;
-      while (i < guardados.length) {
-        let currentModalidad = guardados[i].modalidad;
-        let count = 1;
-
-        while (i + count < guardados.length && guardados[i + count].modalidad === currentModalidad) {
-          count++;
-        }
-
+      listaCompleta.forEach(item => {
         html += `
           <tr>
-            <td rowspan="${count}" style="vertical-align: middle;"><strong>${currentModalidad}</strong></td>
-            <td>${guardados[i].detalle}</td>
-            <td><strong>${guardados[i].precio}</strong></td>
+            <td><strong>${item.modalidad}</strong></td>
+            <td>${item.detalle}</td>
+            <td><strong>${item.precio}</strong></td>
           </tr>
         `;
-
-        for (let j = 1; j < count; j++) {
-          html += `
-            <tr>
-              <td>${guardados[i + j].detalle}</td>
-              <td><strong>${guardados[i + j].precio}</strong></td>
-            </tr>
-          `;
-        }
-
-        i += count;
-      }
+      });
 
       tbody.innerHTML = html;
-    }
-
-    function abrirModal() {
-      renderizarFormularioEdicion();
-      document.getElementById('modalEditor').style.display = 'flex';
-    }
-
-    function cerrarModal() {
-      document.getElementById('modalEditor').style.display = 'none';
-    }
-
-    function renderizarFormularioEdicion() {
-      const guardados = obtenerPreciosActuales();
-      const contenedor = document.getElementById('contenedorLicenciasEditables');
-      let html = '';
-
-      guardados.forEach((item, index) => {
-        html += `
-          <div class="item-edit-card">
-            <button type="button" class="btn-eliminar-item" onclick="eliminarPrecio(${index})">🗑️ Eliminar</button>
-            <div class="form-group-precios" style="width: 80%;">
-              <label>Modalidad / Licencia:</label>
-              <input type="text" class="form-control-sm edit-modalidad" value="${item.modalidad}" required>
-            </div>
-            <div class="form-group-precios">
-              <label>Detalle / Forma de pago:</label>
-              <input type="text" class="form-control-sm edit-detalle" value="${item.detalle}" required>
-            </div>
-            <div class="form-group-precios">
-              <label>Precio:</label>
-              <input type="text" class="form-control-sm edit-precio" value="${item.precio}" required>
-            </div>
-          </div>
-        `;
-      });
-
-      contenedor.innerHTML = html;
-    }
-
-    function agregarNuevoPrecio(e) {
-      e.preventDefault();
-      const mod = document.getElementById('nuevoModalidad').value.trim();
-      const det = document.getElementById('nuevoDetalle').value.trim();
-      const pre = document.getElementById('nuevoPrecio').value.trim();
-
-      if (!mod || !det || !pre) return;
-
-      const guardados = obtenerPreciosActuales();
-      guardados.push({ modalidad: mod, detalle: det, precio: pre });
-
-      localStorage.setItem('sbo_precios_guia', JSON.stringify(guardados));
-      
-      document.getElementById('formAltaPrecio').reset();
-
-      cargarTablaPrecios();
-      renderizarFormularioEdicion();
-      alert('¡Nueva opción agregada con éxito!');
-    }
-
-    function guardarPreciosEditados(e) {
-      e.preventDefault();
-      
-      const tarjetas = document.querySelectorAll('.item-edit-card');
-      const listaActualizada = [];
-
-      tarjetas.forEach(card => {
-        const mod = card.querySelector('.edit-modalidad').value.trim();
-        const det = card.querySelector('.edit-detalle').value.trim();
-        const pre = card.querySelector('.edit-precio').value.trim();
-
-        if (mod && det && pre) {
-          listaActualizada.push({ modalidad: mod, detalle: det, precio: pre });
-        }
-      });
-
-      localStorage.setItem('sbo_precios_guia', JSON.stringify(listaActualizada));
-      cargarTablaPrecios();
-      cerrarModal();
-      alert('¡Tabla de precios y licencias actualizada!');
-    }
-
-    function eliminarPrecio(index) {
-      if (confirm('¿Estás seguro de eliminar esta opción?')) {
-        const guardados = obtenerPreciosActuales();
-        guardados.splice(index, 1);
-        localStorage.setItem('sbo_precios_guia', JSON.stringify(guardados));
-        
-        cargarTablaPrecios();
-        renderizarFormularioEdicion();
-      }
     }
   </script>
 </body>

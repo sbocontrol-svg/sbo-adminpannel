@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.B.O. Control - Alta de Cliente</title>
-    <!-- Script de Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: #0d1b2a; color: #333; padding: 12px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -24,9 +22,11 @@
         .btn-primary:hover { background-color: #1b5e20; }
         .btn-generar { background-color: #00796b; color: white; border: none; padding: 0 12px; border-radius: 8px; font-weight: bold; font-size: 12px; white-space: nowrap; cursor: pointer; }
         .btn-generar:hover { background-color: #004d40; }
+        .btn-cargar-json { background-color: #374151; color: white; border: none; padding: 0 10px; border-radius: 8px; font-weight: bold; font-size: 12px; white-space: nowrap; cursor: pointer; }
+        .btn-cargar-json:hover { background-color: #1f2937; }
         .btn-historial { background-color: #374151; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; }
         .btn-historial:hover { background-color: #1f2937; }
-        .btn-pdf { background-color: #0277bd; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; }
+        .btn-pdf { background-color: #0277bd; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; text-decoration: none; display: block; }
         .btn-pdf:hover { background-color: #01579b; }
         .btn-volver { background-color: #546e7a; color: white; border: none; width: 100%; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: block; text-align: center; margin-top: 8px; }
 
@@ -87,9 +87,13 @@
             </div>
             <div class="form-group">
                 <label>6. Tipo de Licencia:</label>
-                <select id="selLicenciaAsignada" class="form-control" required>
-                    <option value="">Cargando licencias...</option>
-                </select>
+                <div style="display: flex; gap: 6px;">
+                    <select id="selLicenciaAsignada" class="form-control" required>
+                        <option value="">Cargando licencias...</option>
+                    </select>
+                    <input type="file" id="inputImportarLicencia" accept=".json,.sbo" style="display: none;" onchange="cargarLicenciaDesdeArchivo(event)">
+                    <button type="button" class="btn-cargar-json" onclick="document.getElementById('inputImportarLicencia').click()">📂 Cargar JSON</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>7. Clave de Licencia:</label>
@@ -112,7 +116,7 @@
         </form>
 
         <button type="button" class="btn-historial" onclick="abrirModalClientes()">👥 Ver Clientes Registrados</button>
-        <button type="button" class="btn-pdf" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+        <a href="visor_clientes.html" class="btn-pdf"> Listado de Clientes</a>
         <a href="menu.html" class="btn-volver">⬅️ Volver al Menú</a>
     </div>
 
@@ -131,11 +135,6 @@
     </div>
 
     <script>
-        // Configuración de Supabase (Reemplazá con tus datos de Project Settings > API)
-        const SUPABASE_URL = 'https://sjtuddayrwyqclskxzkb.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_txQwdZRHeV-NdODshrPbGw_MSYR1Ag6';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         let ultimoArchivoBlob = null;
         let ultimoNombreArchivo = "";
 
@@ -168,20 +167,77 @@
             const select = document.getElementById('selLicenciaAsignada');
             const licencias = JSON.parse(localStorage.getItem('sbo_db_licencias_personalizadas')) || [];
 
-            const licenciasValidas = licencias.filter(l => l && (l.nombreLicencia || l.clave));
+            const licenciasValidas = licencias.filter(l => l && (l.nombreLicencia || l.nombre || l.clave));
 
             if (licenciasValidas.length === 0) {
-                select.innerHTML = '<option value="">No hay licencias disponibles</option>';
+                select.innerHTML = '<option value="">No hay licencias disponibles (Usá 📂 Cargar JSON)</option>';
                 return;
             }
 
             let html = '<option value="">Seleccioná una licencia...</option>';
             licenciasValidas.forEach(l => {
-                const nombre = l.nombreLicencia || 'Licencia';
+                const nombre = l.nombreLicencia || l.nombre || 'Licencia';
                 const clave = l.clave || '';
                 html += `<option value="${nombre}" data-clave="${clave}">${nombre}</option>`;
             });
             select.innerHTML = html;
+        }
+
+        // Función para leer un archivo JSON de Licencia guardado en Descargas
+        function cargarLicenciaDesdeArchivo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    let licenciasLocales = JSON.parse(localStorage.getItem('sbo_db_licencias_personalizadas')) || [];
+                    
+                    let nuevasAgregadas = 0;
+                    let nombreSeleccionado = "";
+
+                    const procesarLicencia = (item) => {
+                        if (!item) return;
+                        const nombreL = item.nombreLicencia || item.nombre;
+                        if (!nombreL) return;
+
+                        // Verificar si no está repetida por ID o por nombre
+                        const existe = licenciasLocales.some(l => l.id === item.id || (l.nombreLicencia || l.nombre) === nombreL);
+                        if (!existe) {
+                            licenciasLocales.push(item);
+                            nuevasAgregadas++;
+                        }
+                        nombreSeleccionado = nombreL;
+                    };
+
+                    if (Array.isArray(data)) {
+                        data.forEach(item => procesarLicencia(item));
+                    } else if (typeof data === 'object') {
+                        procesarLicencia(data);
+                    }
+
+                    if (nuevasAgregadas > 0 || nombreSeleccionado) {
+                        localStorage.setItem('sbo_db_licencias_personalizadas', JSON.stringify(licenciasLocales));
+                        cargarSelectLicencias();
+                        
+                        // Seleccionar la licencia recién cargada
+                        if (nombreSeleccionado) {
+                            document.getElementById('selLicenciaAsignada').value = nombreSeleccionado;
+                            document.getElementById('selLicenciaAsignada').dispatchEvent(new Event('change'));
+                        }
+                        
+                        alert('¡Licencia cargada con éxito desde el archivo JSON!');
+                    } else {
+                        alert('El archivo JSON no contiene licencias válidas o ya existía en la lista.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error al leer el archivo JSON de licencia.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Resetear el input para poder reimportar el mismo archivo si se requiere
         }
 
         function obtenerAcronimo(texto, valorDefecto = 'CLI') {
@@ -240,7 +296,7 @@
             return fechaStr;
         }
 
-        document.getElementById('formCliente').addEventListener('submit', async function(e) {
+        document.getElementById('formCliente').addEventListener('submit', function(e) {
             e.preventDefault();
             const nombreCliente = document.getElementById('txtNombreCliente').value.trim();
             const contacto = document.getElementById('txtContacto').value.trim() || '2364502082';
@@ -270,36 +326,6 @@
                 fechaFin
             };
 
-            // 1. Guardar en Supabase (Nube) con alertas de diagnóstico
-            try {
-                const { error } = await supabaseClient
-                    .from('clientes')
-                    .insert([
-                        {
-                            nombreCliente,
-                            contacto,
-                            email,
-                            domicilio,
-                            hardware,
-                            licencia: licenciaSeleccionada,
-                            clave: claveLicencia || 'SIN-CLAVE',
-                            fechaInicio,
-                            fechaFin,
-                            fechaRegistro: new Date().toLocaleDateString('es-AR')
-                        }
-                    ]);
-                
-                if (error) {
-                    console.error('Error al guardar en Supabase:', error);
-                    alert('Error de Supabase: ' + JSON.stringify(error));
-                } else {
-                    alert('¡Éxito! El cliente se guardó en Supabase.');
-                }
-            } catch (err) {
-                console.error('Excepción al conectar con Supabase:', err);
-                alert('Excepción de red/conexión: ' + err.message);
-            }
-
             const jsonString = JSON.stringify(datosConfig, null, 2);
             ultimoArchivoBlob = new Blob([jsonString], { type: 'application/json' });
             
@@ -319,7 +345,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            // Respaldo local en localStorage por las dudas
+            // Respaldo local en localStorage
             let clientes = JSON.parse(localStorage.getItem('sbo_db_clientes')) || [];
             const nuevoRegistro = {
                 ...datosConfig,
@@ -363,7 +389,7 @@
                 let telefonoLimpio = contacto.replace(/[^0-9]/g, '');
                 const urlWa = `https://api.whatsapp.com/send?phone=${telefonoLimpio}&text=` + encodeURIComponent(textoMensaje);
                 
-                let abrirWpp = confirm(`¡Cliente registrado en la nube y archivo .sbo descargado!\n\n📋 El mensaje se COPIÓ AL PORTAPAPELES.\n\n¿Querés abrir WhatsApp ahora?`);
+                let abrirWpp = confirm(`¡Cliente registrado localmente y archivo .sbo descargado!\n\n📋 El mensaje se COPIÓ AL PORTAPAPELES.\n\n¿Querés abrir WhatsApp ahora?`);
                 if (abrirWpp) {
                     window.open(urlWa, '_blank');
                 }

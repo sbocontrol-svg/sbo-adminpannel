@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado General de Presupuestos</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 12px; background: #0d1b2a; color: #333; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        
+        .container { background: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 92vh; }
+        
+        h2 { text-align: center; font-size: 17px; color: #00796b; margin: 0 0 12px 0; font-weight: 700; }
+        
+        .acciones-superior { text-align: center; margin-bottom: 12px; }
+        .input-file-custom { background: #00796b; color: white; padding: 10px; border-radius: 8px; display: inline-block; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; }
+        input[type="file"] { display: none; }
+
+        #estado { text-align: center; font-weight: 600; margin-bottom: 8px; font-size: 11px; color: #666; }
+        
+        .table-container { 
+            width: 100%; 
+            max-height: 50vh; 
+            overflow-y: auto; 
+            overflow-x: auto; 
+            background: #fff; 
+            border-radius: 12px; 
+            border: 1px solid #ddd;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); 
+            margin-bottom: 12px;
+        }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+        th, td { border: 1px solid #eee; padding: 8px 10px; text-align: left; }
+        th { background-color: #00796b; color: white; position: sticky; top: 0; z-index: 2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        .acciones-inferior { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+        button, .btn-link { background: #0277bd; color: white; border: none; padding: 11px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; display: block; width: 100%; }
+        button:hover { background: #01579b; }
+        .btn-volver { background: #546e7a; }
+        .btn-volver:hover { background: #455a64; }
+
+        @media print {
+            @page { size: landscape; }
+            body { background: white !important; padding: 0 !important; display: block !important; }
+            .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; max-height: none !important; padding: 0 !important; background: white !important; }
+            .acciones-superior, .acciones-inferior, #estado { display: none !important; }
+            .table-container { max-height: none !important; overflow: visible !important; border: none !important; box-shadow: none !important; }
+            table { font-size: 10px; }
+            th, td { border: 1px solid #000; padding: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Listado General de Presupuestos</h2>
+
+        <div class="acciones-superior">
+            <label class="input-file-custom" for="archivosJson">
+                📁 Seleccionar / Sumar Presupuestos .sbo
+            </label>
+            <input type="file" id="archivosJson" multiple accept=".json,.sbo" onchange="agregarArchivos(event)">
+        </div>
+
+        <div id="estado">Cargando presupuestos guardados...</div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Teléfono</th>
+                        <th>Servicios</th>
+                        <th>Subtotal</th>
+                        <th>Descuento</th>
+                        <th>Total Final</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla">
+                    <!-- Filas cargadas dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="acciones-inferior">
+            <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+            <a href="presupuesto.html" class="btn-link btn-volver">⬅️ Volver a Generador de Presupuestos</a>
+        </div>
+    </div>
+
+    <script>
+        let listaTotal = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarPresupuestosGuardados();
+        });
+
+        function cargarPresupuestosGuardados() {
+            const dbHistorial = localStorage.getItem('sbo_historial_presupuestos');
+            const dbVisor = localStorage.getItem('sbo_visor_presupuestos');
+
+            let datosUnificados = [];
+
+            try {
+                if (dbHistorial) datosUnificados = datosUnificados.concat(JSON.parse(dbHistorial));
+                if (dbVisor) datosUnificados = datosUnificados.concat(JSON.parse(dbVisor));
+            } catch(e) {
+                console.error("Error al leer memorias de presupuestos:", e);
+            }
+
+            listaTotal = [];
+            
+            // Unificamos evitando duplicados
+            datosUnificados.forEach(item => procesarPresupuesto(item));
+
+            if (listaTotal.length > 0) {
+                actualizarTabla();
+            } else {
+                document.getElementById('estado').innerText = "Seleccioná archivos para empezar a sumar...";
+            }
+        }
+
+        function procesarPresupuesto(item) {
+            if (!item || typeof item !== 'object') return;
+
+            // Si viene anidado en una propiedad
+            if (Array.isArray(item.presupuestos)) {
+                item.presupuestos.forEach(p => procesarPresupuesto(p));
+                return;
+            }
+
+            const cliente = item.cliente || item.nombreCliente || '';
+            const total = item.totalFinal !== undefined ? item.totalFinal : (item.total || 0);
+
+            if (!cliente && !total) return;
+
+            // Clave única de control
+            const idRef = item.id || `${cliente}_${item.fecha}_${total}`;
+
+            const yaExiste = listaTotal.some(p => {
+                const pIdRef = p.id || `${p.cliente || p.nombreCliente}_${p.fecha}_${p.totalFinal || p.total || 0}`;
+                return pIdRef === idRef;
+            });
+
+            if (!yaExiste) {
+                listaTotal.push(item);
+            }
+        }
+
+        function agregarArchivos(event) {
+            const archivos = event.target.files;
+            if (!archivos || archivos.length === 0) return;
+
+            let procesados = 0;
+
+            for (let i = 0; i < archivos.length; i++) {
+                let lector = new FileReader();
+                lector.onload = function(e) {
+                    try {
+                        let data = JSON.parse(e.target.result);
+                        if (Array.isArray(data)) {
+                            data.forEach(item => procesarPresupuesto(item));
+                        } else {
+                            procesarPresupuesto(data);
+                        }
+                    } catch (err) {
+                        console.error("Error al parsear JSON", err);
+                    }
+                    
+                    procesados++;
+                    if (procesados === archivos.length) {
+                        guardarEnMemoria();
+                        actualizarTabla();
+                    }
+                };
+                lector.readAsText(archivos[i]);
+            }
+            event.target.value = '';
+        }
+
+        function actualizarTabla() {
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            const estado = document.getElementById('estado');
+            cuerpoTabla.innerHTML = '';
+
+            listaTotal.forEach(p => {
+                let fila = document.createElement('tr');
+                
+                let cliente = p.cliente || p.nombreCliente || '-';
+                let fecha = p.fecha || '-';
+                let telefono = p.telefono || p.whatsapp || '-';
+
+                // Formatear items de servicios
+                let serviciosTxt = '-';
+                if (Array.isArray(p.items) && p.items.length > 0) {
+                    serviciosTxt = p.items.map(i => i.nombre || i.modalidad || 'Servicio').join(', ');
+                }
+
+                let subtotal = p.subtotal ? `$${Number(p.subtotal).toLocaleString('es-AR')}` : '-';
+                
+                let descuento = '-';
+                if (p.montoDescuento && p.montoDescuento > 0) {
+                    let mot = p.motivoDescuento ? ` (${p.motivoDescuento})` : '';
+                    descuento = `-$${Number(p.montoDescuento).toLocaleString('es-AR')}${mot}`;
+                }
+
+                let totalFinalNum = p.totalFinal !== undefined ? p.totalFinal : (p.total || 0);
+                let totalFinal = `$${Number(totalFinalNum).toLocaleString('es-AR')}`;
+
+                fila.innerHTML = `
+                    <td><strong>${cliente}</strong></td>
+                    <td>${fecha}</td>
+                    <td>${telefono}</td>
+                    <td>${serviciosTxt}</td>
+                    <td>${subtotal}</td>
+                    <td style="color:#c62828;">${descuento}</td>
+                    <td style="color:#00796b; font-weight:bold;">${totalFinal}</td>
+                `;
+                cuerpoTabla.appendChild(fila);
+            });
+
+            estado.innerText = `Total de presupuestos guardados: ${listaTotal.length}`;
+        }
+
+        function guardarEnMemoria() {
+            const jsonGuardar = JSON.stringify(listaTotal);
+            localStorage.setItem('sbo_historial_presupuestos', jsonGuardar);
+            localStorage.setItem('sbo_visor_presupuestos', jsonGuardar);
+        }
+    </script>
+</body>
+</html>

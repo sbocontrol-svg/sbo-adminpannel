@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado General de Clientes</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 12px; background: #0d1b2a; color: #333; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { background: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 92vh; }
+        h2 { text-align: center; font-size: 17px; color: #00796b; margin: 0 0 12px 0; font-weight: 700; }
+        .acciones-superior { text-align: center; margin-bottom: 8px; }
+        .input-file-custom { background: #00796b; color: white; padding: 10px; border-radius: 8px; display: inline-block; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; }
+        input[type="file"] { display: none; }
+        #estado { text-align: center; font-weight: 600; margin-bottom: 8px; font-size: 11px; color: #666; }
+        .table-container { width: 100%; max-height: 50vh; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #ddd; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+        th, td { border: 1px solid #eee; padding: 8px 10px; text-align: left; }
+        th { background-color: #00796b; color: white; position: sticky; top: 0; z-index: 2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .acciones-inferior { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+        button, .btn-link { background: #0277bd; color: white; border: none; padding: 11px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; display: block; width: 100%; }
+        button:hover { background: #01579b; }
+        .btn-limpiar { background: #c62828; }
+        .btn-limpiar:hover { background: #b71c1c; }
+        .btn-volver { background: #546e7a; }
+        .btn-volver:hover { background: #455a64; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Listado General de Clientes</h2>
+        <div class="acciones-superior">
+            <label class="input-file-custom" for="archivosJson">📁 Seleccionar / Sumar Archivos .sbo</label>
+            <input type="file" id="archivosJson" multiple accept=".json,.sbo" onchange="agregarArchivos(event)">
+        </div>
+        <div id="estado">Cargando registros guardados...</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th><th>Contacto</th><th>Email</th><th>Domicilio</th>
+                        <th>Hardware</th><th>Licencia</th><th>Clave</th><th>Inicio</th><th>Fin</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla"></tbody>
+            </table>
+        </div>
+        <div class="acciones-inferior">
+            <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+            <button class="btn-limpiar" onclick="vaciarLista()">🗑️ Limpiar Lista Acumulada</button>
+            <a href="alta_cliente.html" class="btn-link btn-volver">⬅️ Volver a Alta de Clientes</a>
+        </div>
+    </div>
+    <script>
+        let listaTotal = [];
+
+        function cargarClientesGuardados() {
+            const guardados = localStorage.getItem('sbo_lista_acumulada');
+            if (guardados) {
+                try {
+                    listaTotal = JSON.parse(guardados);
+                } catch(e) {
+                    listaTotal = [];
+                }
+                actualizarTabla();
+            } else {
+                document.getElementById('estado').innerText = "Seleccioná archivos para empezar a sumar...";
+            }
+        }
+
+        function agregarArchivos(event) {
+            const archivos = event.target.files;
+            if (!archivos || archivos.length === 0) return;
+            
+            let procesados = 0;
+
+            const procesarElemento = (item) => {
+                if (!item || typeof item !== 'object') return;
+                
+                const claveRef = item.clave || item.id || item.hardware || JSON.stringify(item);
+                const existe = listaTotal.some(e => (e.clave || e.id || e.hardware || JSON.stringify(e)) === claveRef);
+
+                if (!existe) {
+                    listaTotal.push(item);
+                }
+            };
+
+            for (let i = 0; i < archivos.length; i++) {
+                let lector = new FileReader();
+                lector.onload = function(e) {
+                    try {
+                        let c = JSON.parse(e.target.result);
+                        if (Array.isArray(c)) {
+                            c.forEach(item => procesarElemento(item));
+                        } else {
+                            procesarElemento(c);
+                        }
+                    } catch (err) { 
+                        console.error('Error al leer JSON:', err); 
+                    }
+                    
+                    procesados++;
+                    if(procesados === archivos.length) {
+                        localStorage.setItem('sbo_lista_acumulada', JSON.stringify(listaTotal));
+                        actualizarTabla();
+                    }
+                };
+                lector.readAsText(archivos[i]);
+            }
+            event.target.value = ''; 
+        }
+
+        function actualizarTabla() {
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            cuerpoTabla.innerHTML = '';
+            
+            listaTotal.forEach(c => {
+                let fila = document.createElement('tr');
+                
+                let nombre = c.nombreCliente || c.cliente || c.nombre || '-';
+                let contacto = c.contacto || c.whatsapp || c.telefono || '-';
+                let email = c.email || c.correo || '-';
+                let domicilio = c.domicilio || c.direccion || '-';
+                let hardware = c.hardware || c.hw || '-';
+                let licencia = c.licencia || c.nombreLicencia || '-';
+                let clave = c.clave || '-';
+                let inicio = c.fechaInicio || c.inicio || '-';
+                let fin = c.fechaFin || c.fin || '-';
+
+                fila.innerHTML = `<td>${nombre}</td><td>${contacto}</td><td>${email}</td><td>${domicilio}</td><td>${hardware}</td><td>${licencia}</td><td>${clave}</td><td>${inicio}</td><td>${fin}</td>`;
+                cuerpoTabla.appendChild(fila);
+            });
+            
+            document.getElementById('estado').innerText = `Total de registros: ${listaTotal.length}`;
+        }
+
+        function vaciarLista() {
+            if (confirm('¿Querés borrar la lista acumulada de la pantalla y la memoria?')) {
+                listaTotal = [];
+                localStorage.removeItem('sbo_lista_acumulada');
+                actualizarTabla();
+                document.getElementById('estado').innerText = "Lista vaciada correctamente.";
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarClientesGuardados);
+    </script>
+</body>
+</html>
