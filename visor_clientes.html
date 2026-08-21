@@ -5,146 +5,409 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listado General de Clientes</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 12px; background: #0d1b2a; color: #333; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .container { background: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 92vh; }
-        h2 { text-align: center; font-size: 17px; color: #00796b; margin: 0 0 12px 0; font-weight: 700; }
-        .acciones-superior { text-align: center; margin-bottom: 8px; }
-        .input-file-custom { background: #00796b; color: white; padding: 10px; border-radius: 8px; display: inline-block; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #0d1b2a; 
+            color: #333; 
+            padding: 12px; 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .app-card { 
+            background: #f8f9fa; 
+            width: 100%; 
+            max-width: 480px; 
+            border-radius: 18px; 
+            padding: 16px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            max-height: 94vh; 
+        }
+        h2 { text-align: center; font-size: 18px; color: #00796b; font-weight: 700; }
+        
+        .file-upload-btn { 
+            background: #00796b; 
+            color: #fff; 
+            padding: 12px; 
+            border-radius: 10px; 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            display: block; 
+        }
         input[type="file"] { display: none; }
-        #estado { text-align: center; font-weight: 600; margin-bottom: 8px; font-size: 11px; color: #666; }
-        .table-container { width: 100%; max-height: 50vh; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #ddd; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
-        th, td { border: 1px solid #eee; padding: 8px 10px; text-align: left; }
-        th { background-color: #00796b; color: white; position: sticky; top: 0; z-index: 2; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .acciones-inferior { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
-        button, .btn-link { background: #0277bd; color: white; border: none; padding: 11px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; display: block; width: 100%; }
-        button:hover { background: #01579b; }
-        .btn-limpiar { background: #c62828; }
-        .btn-limpiar:hover { background: #b71c1c; }
-        .btn-volver { background: #546e7a; }
-        .btn-volver:hover { background: #455a64; }
+
+        .status-bar { text-align: center; font-size: 12px; color: #555; font-weight: 600; }
+        
+        .table-wrapper { 
+            width: 100%; 
+            max-height: 52vh; 
+            overflow: auto; 
+            background: #ffffff; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+        th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #00796b; color: #fff; position: sticky; top: 0; z-index: 1; }
+        tr:nth-child(even) { background: #f9f9f9; }
+
+        .action-btns {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn-edit {
+            background: #f57c00;
+            color: white;
+            border: none;
+            padding: 6px 8px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete-item {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 6px 8px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+        .btn { 
+            background: #0277bd; 
+            color: #fff; 
+            border: none; 
+            padding: 11px; 
+            font-size: 13px; 
+            font-weight: 700; 
+            border-radius: 8px; 
+            text-align: center; 
+            text-decoration: none; 
+            cursor: pointer; 
+        }
+        .btn-danger { background: #c62828; }
+        .btn-secondary { background: #546e7a; }
+
+        /* Modal para editar registros */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 12px;
+        }
+        .modal-card {
+            background: #fff; width: 100%; max-width: 440px; border-radius: 16px; padding: 16px;
+            max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+        }
+        .modal-card h3 { color: #00796b; font-size: 16px; text-align: center; margin-bottom: 6px; }
+        .modal-card label { font-size: 11px; font-weight: bold; color: #333; margin-top: 4px; }
+        .modal-card input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; }
+        .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
+        .btn-save-modal { background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-cancel-modal { background: #c62828; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; font-weight: bold; cursor: pointer; }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .app-card { box-shadow: none; max-width: 100%; max-height: none; padding: 0; }
+            .file-upload-btn, .btn-group, .status-bar, input, .modal-overlay, .btn-edit, .btn-delete-item { display: none !important; }
+            .table-wrapper { max-height: none; border: none; overflow: visible; }
+            th, td { border: 1px solid #000; padding: 6px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <div class="app-card">
         <h2>Listado General de Clientes</h2>
-        <div class="acciones-superior">
-            <label class="input-file-custom" for="archivosJson">📁 Seleccionar / Sumar Archivos .sbo</label>
-            <input type="file" id="archivosJson" multiple accept=".json,.sbo" onchange="agregarArchivos(event)">
-        </div>
-        <div id="estado">Cargando registros guardados...</div>
-        <div class="table-container">
+
+        <label class="file-upload-btn" for="fileInput">
+            📁 Seleccionar / Sumar Archivos .sbo
+        </label>
+        <input type="file" id="fileInput" multiple accept="*/*" onchange="cargarArchivos(event)">
+
+        <div id="status" class="status-bar">Cargando base de datos...</div>
+
+        <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th>Cliente</th><th>Contacto</th><th>Email</th><th>Domicilio</th>
-                        <th>Hardware</th><th>Licencia</th><th>Clave</th><th>Inicio</th><th>Fin</th>
+                        <th>Acción</th>
+                        <th>Cliente</th>
+                        <th>Contacto</th>
+                        <th>Email</th>
+                        <th>Domicilio</th>
+                        <th>Hardware</th>
+                        <th>Licencia</th>
+                        <th>Clave</th>
+                        <th>Inicio</th>
+                        <th>Fin</th>
                     </tr>
                 </thead>
-                <tbody id="cuerpoTabla"></tbody>
+                <tbody id="tablaBody"></tbody>
             </table>
         </div>
-        <div class="acciones-inferior">
-            <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
-            <button class="btn-limpiar" onclick="vaciarLista()">🗑️ Limpiar Lista Acumulada</button>
-            <a href="alta_cliente.html" class="btn-link btn-volver">⬅️ Volver a Alta de Clientes</a>
+
+        <div class="btn-group">
+            <button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+            <button class="btn btn-danger" onclick="limpiarBase()">🗑️ Vaciar Lista</button>
+            <a href="alta_cliente.html" class="btn btn-secondary">⬅️ Volver a Alta de Clientes</a>
         </div>
     </div>
-    <script>
-        let listaTotal = [];
 
-        function cargarClientesGuardados() {
-            const guardados = localStorage.getItem('sbo_lista_acumulada');
-            if (guardados) {
-                try {
-                    listaTotal = JSON.parse(guardados);
-                } catch(e) {
-                    listaTotal = [];
+    <!-- Modal Formulario de Edición -->
+    <div id="modalEditar" class="modal-overlay">
+        <div class="modal-card">
+            <h3>✏️ Editar Cliente</h3>
+            
+            <label>Cliente:</label>
+            <input type="text" id="editNombre">
+
+            <label>Contacto:</label>
+            <input type="text" id="editContacto">
+
+            <label>Email:</label>
+            <input type="email" id="editEmail">
+
+            <label>Domicilio:</label>
+            <input type="text" id="editDomicilio">
+
+            <label>Hardware:</label>
+            <input type="text" id="editHardware">
+
+            <label>Licencia:</label>
+            <input type="text" id="editLicencia">
+
+            <label>Clave:</label>
+            <input type="text" id="editClave">
+
+            <label>Fecha Inicio:</label>
+            <input type="text" id="editInicio">
+
+            <label>Fecha Fin:</label>
+            <input type="text" id="editFin">
+
+            <div class="modal-btns">
+                <button class="btn-save-modal" onclick="guardarEdicion()">💾 Guardar</button>
+                <button class="btn-cancel-modal" onclick="cerrarModal()">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = 'sbo_db_clientes';
+        let clientes = [];
+        let editIndex = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            obtenerGuardados();
+            renderizar();
+        });
+
+        function obtenerGuardados() {
+            try {
+                const data = localStorage.getItem(DB_KEY);
+                if (data) {
+                    const guardados = JSON.parse(data) || [];
+                    clientes = [];
+                    if (Array.isArray(guardados)) {
+                        guardados.forEach(item => agregarRegistro(item));
+                    }
                 }
-                actualizarTabla();
-            } else {
-                document.getElementById('estado').innerText = "Seleccioná archivos para empezar a sumar...";
+            } catch (err) {
+                console.error("Error al leer memoria:", err);
             }
         }
 
-        function agregarArchivos(event) {
-            const archivos = event.target.files;
-            if (!archivos || archivos.length === 0) return;
-            
-            let procesados = 0;
+        function guardar() {
+            localStorage.setItem(DB_KEY, JSON.stringify(clientes));
+        }
 
-            const procesarElemento = (item) => {
-                if (!item || typeof item !== 'object') return;
-                
-                const claveRef = item.clave || item.id || item.hardware || JSON.stringify(item);
-                const existe = listaTotal.some(e => (e.clave || e.id || e.hardware || JSON.stringify(e)) === claveRef);
+        function cargarArchivos(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
 
-                if (!existe) {
-                    listaTotal.push(item);
-                }
-            };
+            let leidos = 0;
 
-            for (let i = 0; i < archivos.length; i++) {
-                let lector = new FileReader();
-                lector.onload = function(e) {
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
                     try {
-                        let c = JSON.parse(e.target.result);
-                        if (Array.isArray(c)) {
-                            c.forEach(item => procesarElemento(item));
-                        } else {
-                            procesarElemento(c);
+                        let texto = e.target.result;
+                        // Limpieza de caracteres BOM de Android/UTF-8
+                        if (texto.charCodeAt(0) === 0xFEFF) {
+                            texto = texto.slice(1);
                         }
-                    } catch (err) { 
-                        console.error('Error al leer JSON:', err); 
+                        const json = JSON.parse(texto.trim());
+                        procesarObjeto(json);
+                        guardar();
+                    } catch (err) {
+                        alert("⚠️ Error al leer el archivo JSON/.sbo");
                     }
-                    
-                    procesados++;
-                    if(procesados === archivos.length) {
-                        localStorage.setItem('sbo_lista_acumulada', JSON.stringify(listaTotal));
-                        actualizarTabla();
+
+                    leidos++;
+                    if (leidos === files.length) {
+                        renderizar();
                     }
                 };
-                lector.readAsText(archivos[i]);
+
+                reader.readAsText(f);
             }
-            event.target.value = ''; 
+            event.target.value = '';
         }
 
-        function actualizarTabla() {
-            const cuerpoTabla = document.getElementById('cuerpoTabla');
-            cuerpoTabla.innerHTML = '';
-            
-            listaTotal.forEach(c => {
-                let fila = document.createElement('tr');
-                
-                let nombre = c.nombreCliente || c.cliente || c.nombre || '-';
-                let contacto = c.contacto || c.whatsapp || c.telefono || '-';
-                let email = c.email || c.correo || '-';
-                let domicilio = c.domicilio || c.direccion || '-';
-                let hardware = c.hardware || c.hw || '-';
-                let licencia = c.licencia || c.nombreLicencia || '-';
-                let clave = c.clave || '-';
-                let inicio = c.fechaInicio || c.inicio || '-';
-                let fin = c.fechaFin || c.fin || '-';
+        function procesarObjeto(data) {
+            if (Array.isArray(data)) {
+                data.forEach(item => agregarRegistro(item));
+            } else if (typeof data === 'object') {
+                if (Array.isArray(data.clientes)) {
+                    data.clientes.forEach(item => agregarRegistro(item));
+                } else {
+                    agregarRegistro(data);
+                }
+            }
+        }
 
-                fila.innerHTML = `<td>${nombre}</td><td>${contacto}</td><td>${email}</td><td>${domicilio}</td><td>${hardware}</td><td>${licencia}</td><td>${clave}</td><td>${inicio}</td><td>${fin}</td>`;
-                cuerpoTabla.appendChild(fila);
+        function agregarRegistro(item) {
+            if (!item || typeof item !== 'object') return;
+
+            const c = {
+                nombre: item.nombre || item.nombreCliente || item.txtNombreCliente || item.cliente || '-',
+                contacto: item.contacto || item.txtContacto || item.whatsapp || item.telefono || '-',
+                email: item.email || item.txtEmail || item.correo || '-',
+                domicilio: item.domicilio || item.txtDomicilio || item.direccion || '-',
+                hardware: item.hardware || item.txtHardware || item.hw || '-',
+                licencia: item.licencia || item.txtLicencia || item.nombreLicencia || '-',
+                clave: item.clave || item.txtClave || item.key || '-',
+                inicio: item.inicio || item.fechaInicio || item.txtFechaInicio || '-',
+                fin: item.fin || item.fechaFin || item.txtFechaFin || '-'
+            };
+
+            const indexExistente = clientes.findIndex(elem => 
+                (c.clave !== '-' && elem.clave === c.clave) ||
+                (c.nombre !== '-' && elem.nombre.toLowerCase() === c.nombre.toLowerCase())
+            );
+
+            if (indexExistente !== -1) {
+                clientes[indexExistente] = c;
+            } else {
+                clientes.push(c);
+            }
+        }
+
+        function renderizar() {
+            const tbody = document.getElementById('tablaBody');
+            const status = document.getElementById('status');
+            tbody.innerHTML = '';
+
+            if (clientes.length === 0) {
+                status.innerText = "Sin registros.";
+                return;
+            }
+
+            clientes.forEach((c, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-edit" title="Editar" onclick="abrirModalEditar(${index})">✏️</button>
+                            <button class="btn-delete-item" title="Eliminar" onclick="eliminarRegistro(${index})">🗑️</button>
+                        </div>
+                    </td>
+                    <td><strong>${c.nombre}</strong></td>
+                    <td>${c.contacto}</td>
+                    <td>${c.email}</td>
+                    <td>${c.domicilio}</td>
+                    <td>${c.hardware}</td>
+                    <td>${c.licencia}</td>
+                    <td>${c.clave}</td>
+                    <td>${c.inicio}</td>
+                    <td>${c.fin}</td>
+                `;
+                tbody.appendChild(tr);
             });
-            
-            document.getElementById('estado').innerText = `Total de registros: ${listaTotal.length}`;
+
+            status.innerText = `Total en tabla: ${clientes.length}`;
         }
 
-        function vaciarLista() {
-            if (confirm('¿Querés borrar la lista acumulada de la pantalla y la memoria?')) {
-                listaTotal = [];
-                localStorage.removeItem('sbo_lista_acumulada');
-                actualizarTabla();
-                document.getElementById('estado').innerText = "Lista vaciada correctamente.";
+        /* Lógica para eliminar registro individual */
+        function eliminarRegistro(index) {
+            const cliente = clientes[index];
+            const nombre = cliente ? cliente.nombre : 'este cliente';
+            if (confirm(`¿Estás seguro de eliminar el registro de "${nombre}"?`)) {
+                clientes.splice(index, 1);
+                guardar();
+                renderizar();
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarClientesGuardados);
+        /* Lógica del Modal para Editar */
+        function abrirModalEditar(index) {
+            editIndex = index;
+            const c = clientes[index];
+
+            document.getElementById('editNombre').value = c.nombre !== '-' ? c.nombre : '';
+            document.getElementById('editContacto').value = c.contacto !== '-' ? c.contacto : '';
+            document.getElementById('editEmail').value = c.email !== '-' ? c.email : '';
+            document.getElementById('editDomicilio').value = c.domicilio !== '-' ? c.domicilio : '';
+            document.getElementById('editHardware').value = c.hardware !== '-' ? c.hardware : '';
+            document.getElementById('editLicencia').value = c.licencia !== '-' ? c.licencia : '';
+            document.getElementById('editClave').value = c.clave !== '-' ? c.clave : '';
+            document.getElementById('editInicio').value = c.inicio !== '-' ? c.inicio : '';
+            document.getElementById('editFin').value = c.fin !== '-' ? c.fin : '';
+
+            document.getElementById('modalEditar').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalEditar').style.display = 'none';
+            editIndex = null;
+        }
+
+        function guardarEdicion() {
+            if (editIndex === null) return;
+
+            clientes[editIndex] = {
+                nombre: document.getElementById('editNombre').value.trim() || '-',
+                contacto: document.getElementById('editContacto').value.trim() || '-',
+                email: document.getElementById('editEmail').value.trim() || '-',
+                domicilio: document.getElementById('editDomicilio').value.trim() || '-',
+                hardware: document.getElementById('editHardware').value.trim() || '-',
+                licencia: document.getElementById('editLicencia').value.trim() || '-',
+                clave: document.getElementById('editClave').value.trim() || '-',
+                inicio: document.getElementById('editInicio').value.trim() || '-',
+                fin: document.getElementById('editFin').value.trim() || '-'
+            };
+
+            guardar();
+            renderizar();
+            cerrarModal();
+        }
+
+        function limpiarBase() {
+            if (confirm("¿Vaciar la lista acumulada?")) {
+                clientes = [];
+                localStorage.removeItem(DB_KEY);
+                renderizar();
+            }
+        }
     </script>
 </body>
 </html>

@@ -328,11 +328,27 @@
         totalFinal
       };
 
+      // 1. Guardar en la memoria local
       const historial = JSON.parse(localStorage.getItem('sbo_historial_presupuestos')) || [];
       historial.unshift(nuevoRegistro);
       localStorage.setItem('sbo_historial_presupuestos', JSON.stringify(historial));
 
-      if (notificar) alert("✅ Presupuesto guardado correctamente.");
+      // 2. Descargar archivo .sbo al celular
+      const jsonString = JSON.stringify(nuevoRegistro, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const clienteLimpio = cliente.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '_');
+      const nombreArchivo = `presupuesto_${clienteLimpio}.sbo`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombreArchivo;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      if (notificar) alert("✅ Presupuesto guardado y descargado en tu celular como archivo .sbo!");
       return true;
     }
 

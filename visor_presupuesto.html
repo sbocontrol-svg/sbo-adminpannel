@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listado General de Presupuestos</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 12px; background: #0d1b2a; color: #333; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 12px; background: #0d1b2a; color: #333; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
         
         .container { background: #f8f9fa; width: 100%; max-width: 480px; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 92vh; }
         
-        h2 { text-align: center; font-size: 17px; color: #00796b; margin: 0 0 12px 0; font-weight: 700; }
+        h2 { text-align: center; font-size: 17px; color: #00796b; margin-bottom: 12px; font-weight: 700; }
         
         .acciones-superior { text-align: center; margin-bottom: 12px; }
         .input-file-custom { background: #00796b; color: white; padding: 10px; border-radius: 8px; display: inline-block; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; }
@@ -35,6 +35,20 @@
         th { background-color: #00796b; color: white; position: sticky; top: 0; z-index: 2; }
         tr:nth-child(even) { background-color: #f9f9f9; }
 
+        .btn-eliminar { 
+            background: #c62828; 
+            color: white; 
+            border: none; 
+            padding: 6px 8px; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-eliminar:hover { background: #b71c1c; }
+
         .acciones-inferior { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
         button, .btn-link { background: #0277bd; color: white; border: none; padding: 11px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; display: block; width: 100%; }
         button:hover { background: #01579b; }
@@ -45,7 +59,7 @@
             @page { size: landscape; }
             body { background: white !important; padding: 0 !important; display: block !important; }
             .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; max-height: none !important; padding: 0 !important; background: white !important; }
-            .acciones-superior, .acciones-inferior, #estado { display: none !important; }
+            .acciones-superior, .acciones-inferior, #estado, .col-accion, .btn-eliminar { display: none !important; }
             .table-container { max-height: none !important; overflow: visible !important; border: none !important; box-shadow: none !important; }
             table { font-size: 10px; }
             th, td { border: 1px solid #000; padding: 6px; }
@@ -70,6 +84,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th class="col-accion">Acción</th>
                         <th>Cliente</th>
                         <th>Fecha</th>
                         <th>Teléfono</th>
@@ -186,7 +201,12 @@
             const estado = document.getElementById('estado');
             cuerpoTabla.innerHTML = '';
 
-            listaTotal.forEach(p => {
+            if (listaTotal.length === 0) {
+                estado.innerText = "Sin presupuestos cargados.";
+                return;
+            }
+
+            listaTotal.forEach((p, index) => {
                 let fila = document.createElement('tr');
                 
                 let cliente = p.cliente || p.nombreCliente || '-';
@@ -211,6 +231,9 @@
                 let totalFinal = `$${Number(totalFinalNum).toLocaleString('es-AR')}`;
 
                 fila.innerHTML = `
+                    <td class="col-accion">
+                        <button class="btn-eliminar" title="Eliminar" onclick="eliminarPresupuesto(${index})">🗑️</button>
+                    </td>
                     <td><strong>${cliente}</strong></td>
                     <td>${fecha}</td>
                     <td>${telefono}</td>
@@ -223,6 +246,14 @@
             });
 
             estado.innerText = `Total de presupuestos guardados: ${listaTotal.length}`;
+        }
+
+        function eliminarPresupuesto(index) {
+            if (confirm("¿Seguro que querés eliminar este presupuesto del listado?")) {
+                listaTotal.splice(index, 1);
+                guardarEnMemoria();
+                actualizarTabla();
+            }
         }
 
         function guardarEnMemoria() {

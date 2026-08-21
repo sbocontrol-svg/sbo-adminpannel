@@ -51,7 +51,11 @@
                 <input type="text" id="txtDuracion" class="form-control" placeholder="Ej: 365 días / 1 año" required>
             </div>
             <div class="form-group">
-                <label>3. Precio / Costo ($):</label>
+                <label>3. Modalidad / Cuotas:</label>
+                <input type="text" id="txtModalidad" class="form-control" placeholder="Ej: 1 pago / 3 cuotas / Mensual" required>
+            </div>
+            <div class="form-group">
+                <label>4. Precio / Costo ($):</label>
                 <input type="number" id="txtPrecio" class="form-control" placeholder="Ej: 35000" min="0" required>
             </div>
             <button type="submit" class="btn-primary" id="btnGuardar">💾 Guardar y Descargar Licencia</button>
@@ -66,6 +70,7 @@
             e.preventDefault();
             const nombreLicencia = document.getElementById('txtNombreLicencia').value.trim();
             const duracion = document.getElementById('txtDuracion').value.trim();
+            const modalidad = document.getElementById('txtModalidad').value.trim();
             const precio = parseFloat(document.getElementById('txtPrecio').value) || 0;
 
             let licencias = JSON.parse(localStorage.getItem('sbo_db_licencias_personalizadas')) || [];
@@ -74,6 +79,7 @@
                 id: Date.now(),
                 nombreLicencia,
                 duracion,
+                modalidad,
                 precio
             };
             licencias.push(nuevaLicencia);

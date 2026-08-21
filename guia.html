@@ -91,7 +91,7 @@
       </table>
 
       <p style="font-size: 0.72rem; color: #64748b; font-style: italic; margin-top: 6px; margin-bottom: 8px; text-align: center;">
-        * Precios sincronizados con la Gestión de Licencias.
+        * Precios actualizables según costo de vida...
       </p>
 
       <a href="licencias.html" class="btn-toggle-edit">🔑 Ir a Gestión de Licencias / Precios</a>
@@ -111,7 +111,7 @@
       { modalidad: "Generación de Clave", detalle: "Llave de seguridad individual", precio: "$2.500" }
     ];
 
-    // 2. Licencias Comercializables por Defecto (si no hay nada cargado en licencias.html todavía)
+    // 2. Licencias Comercializables por Defecto (excluye prueba)
     const licenciasComercialesDefault = [
       { modalidad: "Licencia Mensual", detalle: "Abono mensual (30 días)", precio: "$5.000" },
       { modalidad: "Licencia Semestral", detalle: "1 Pago (180 días)", precio: "$30.000" },
@@ -124,22 +124,31 @@
     });
 
     function obtenerLicenciasSincronizadas() {
-      // Leemos lo que haya guardado en licencias.html (si existe)
       let dbLicencias = JSON.parse(localStorage.getItem('sbo_db_licencias_personalizadas')) || [];
 
-      if (dbLicencias.length === 0) {
-        // Si no hay nada cargado aún, devolvemos las 4 comerciales por defecto
+      // Filtramos cualquier licencia de prueba o de 24 hs para que jamás aparezca en la lista comercial
+      let licenciasFiltradas = dbLicencias.filter(item => {
+        let nombre = (item.nombreLicencia || item.nombre || "").toLowerCase();
+        let duracion = (item.duracion || item.detalle || "").toLowerCase();
+        return !nombre.includes('prueba') && !duracion.includes('24 h') && !duracion.includes('24h') && !duracion.includes('24 horas');
+      });
+
+      if (licenciasFiltradas.length === 0) {
         return licenciasComercialesDefault;
       }
 
-      // Si ya hay licencias cargadas en la BD, mapeamos y aseguramos el formato
-      return dbLicencias.map(item => {
+      return licenciasFiltradas.map(item => {
         let pVal = parseFloat(item.precio || item.costo || item.valor || 0) || 0;
         let precioFormat = pVal > 0 ? "$" + pVal.toLocaleString('es-AR') : (item.precioStr || "A consultar");
         
+        let detalleTexto = item.duracion || item.detalle || "Uso del sistema";
+        if (item.modalidad && item.modalidad !== '-') {
+          detalleTexto += ` (${item.modalidad})`;
+        }
+
         return {
           modalidad: item.nombreLicencia || item.nombre || "Licencia",
-          detalle: item.duracion || item.detalle || "Uso del sistema",
+          detalle: detalleTexto,
           precio: precioFormat
         };
       });
