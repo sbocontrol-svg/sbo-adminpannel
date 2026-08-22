@@ -226,7 +226,11 @@
 
                 reader.onload = function(e) {
                     try {
-                        const json = JSON.parse(e.target.result.trim());
+                        let texto = e.target.result;
+                        if (texto.charCodeAt(0) === 0xFEFF) {
+                            texto = texto.slice(1);
+                        }
+                        const json = JSON.parse(texto.trim());
                         procesarObjeto(json);
                         guardar();
                     } catch (err) {

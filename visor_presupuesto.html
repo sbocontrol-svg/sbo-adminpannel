@@ -175,7 +175,11 @@
                 let lector = new FileReader();
                 lector.onload = function(e) {
                     try {
-                        let data = JSON.parse(e.target.result);
+                        let texto = e.target.result;
+                        if (texto.charCodeAt(0) === 0xFEFF) {
+                            texto = texto.slice(1);
+                        }
+                        let data = JSON.parse(texto.trim());
                         if (Array.isArray(data)) {
                             data.forEach(item => procesarPresupuesto(item));
                         } else {

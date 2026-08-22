@@ -251,7 +251,6 @@
                 reader.onload = function(e) {
                     try {
                         let texto = e.target.result;
-                        // Limpieza de caracteres BOM de Android/UTF-8
                         if (texto.charCodeAt(0) === 0xFEFF) {
                             texto = texto.slice(1);
                         }
@@ -347,7 +346,6 @@
             status.innerText = `Total en tabla: ${clientes.length}`;
         }
 
-        /* Lógica para eliminar registro individual */
         function eliminarRegistro(index) {
             const cliente = clientes[index];
             const nombre = cliente ? cliente.nombre : 'este cliente';
@@ -358,7 +356,6 @@
             }
         }
 
-        /* Lógica del Modal para Editar */
         function abrirModalEditar(index) {
             editIndex = index;
             const c = clientes[index];
